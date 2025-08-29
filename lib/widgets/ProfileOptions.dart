@@ -69,11 +69,11 @@ class ProfileOption extends StatelessWidget {
                 ],
               ),
             ),
-            Icon(
-              Icons.arrow_forward_ios,
-              size: 16,
-              color: Colors.grey[400],
-            ),
+            // Icon(
+            //   Icons.arrow_forward_ios,
+            //   size: 16,
+            //   color: Colors.grey[400],
+            // ),
           ],
         ),
       ),

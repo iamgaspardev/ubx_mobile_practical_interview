@@ -1,6 +1,7 @@
 // ignore_for_file: file_names
 
 import 'package:flutter/material.dart';
+import 'package:ubx_practical_mobile/widgets/ProfileOptions.dart';
 
 class Homepage extends StatefulWidget {
   const Homepage({super.key});
@@ -10,6 +11,18 @@ class Homepage extends StatefulWidget {
 }
 
 class _HomepageState extends State<Homepage> {
+   void _showSnackBar(BuildContext context, String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Color.fromARGB(255, 243, 0, 0),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10),
+        ),
+      ),
+    );
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -68,6 +81,23 @@ class _HomepageState extends State<Homepage> {
                   ),
                 ), 
               ),
+               Container(
+                child:Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Column(
+                    children: [
+                      SizedBox(height: 20),
+                      
+                      ProfileOption(
+                        icon: Icons.wallet,
+                        title: 'Investments',
+                        subtitle: 'Manage your investments',
+                        onTap: () => _showSnackBar(context, 'Investments tapped!'),
+                      ),
+                    ],
+                  ),
+                ),
+               )
             ],
           ),
         ),
