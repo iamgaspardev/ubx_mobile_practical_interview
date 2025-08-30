@@ -1,9 +1,7 @@
-// lib/pages/LandingPage.dart
-// ignore_for_file: library_private_types_in_public_api
-
 import 'package:flutter/material.dart';
 import 'package:ubx_practical_mobile/pages/Homepage.dart';
 import 'package:ubx_practical_mobile/pages/UserProfilePage.dart';
+import 'package:ubx_practical_mobile/services/app_lockout_service.dart';
 
 class Landingpage extends StatefulWidget {
   const Landingpage({super.key});
@@ -14,15 +12,32 @@ class Landingpage extends StatefulWidget {
 
 class _LandingpageState extends State<Landingpage> {
   int _selectedIndex = 0;
+  final AppLockoutService _lockoutService = AppLockoutService();
 
   final List<Widget> _pages = [
-    Homepage(),
+    const Homepage(),
     ProfilePageContent(),
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    // Enable lockout when on homepage
+    _updateLockoutStatus();
+  }
+
+  void _updateLockoutStatus() {
+    if (_selectedIndex == 0) {
+      _lockoutService.enableLockout();
+    } else {
+      _lockoutService.disableLockout();
+    }
+  }
 
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
+      _updateLockoutStatus();
     });
   }
 
@@ -37,12 +52,11 @@ class _LandingpageState extends State<Landingpage> {
               color: Colors.black.withOpacity(0.1),
               spreadRadius: 0,
               blurRadius: 10,
-              offset: Offset(0, -5),
+              offset: const Offset(0, -5),
             ),
           ],
         ),
         child: BottomNavigationBar(
-          
           items: const <BottomNavigationBarItem>[
             BottomNavigationBarItem(
               icon: Icon(Icons.home),
@@ -56,16 +70,16 @@ class _LandingpageState extends State<Landingpage> {
             ),
           ],
           currentIndex: _selectedIndex,
-          selectedItemColor: Color.fromARGB(255, 243, 0, 0),
+          selectedItemColor: const Color.fromARGB(255, 243, 0, 0),
           unselectedItemColor: Colors.grey[400],
           backgroundColor: Colors.white,
           elevation: 0,
           type: BottomNavigationBarType.fixed,
-          selectedLabelStyle: TextStyle(
+          selectedLabelStyle: const TextStyle(
             fontWeight: FontWeight.w600,
             fontSize: 12,
           ),
-          unselectedLabelStyle: TextStyle(
+          unselectedLabelStyle: const TextStyle(
             fontWeight: FontWeight.w400,
             fontSize: 12,
           ),

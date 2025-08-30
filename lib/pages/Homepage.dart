@@ -1,5 +1,3 @@
-// ignore_for_file: file_names
-
 import 'package:flutter/material.dart';
 import 'package:ubx_practical_mobile/widgets/ProfileOptions.dart';
 
@@ -11,11 +9,11 @@ class Homepage extends StatefulWidget {
 }
 
 class _HomepageState extends State<Homepage> {
-   void _showSnackBar(BuildContext context, String message) {
+  void _showSnackBar(BuildContext context, String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
-        backgroundColor: Color.fromARGB(255, 243, 0, 0),
+        backgroundColor: const Color.fromARGB(255, 243, 0, 0),
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(10),
@@ -23,6 +21,7 @@ class _HomepageState extends State<Homepage> {
       ),
     );
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -31,63 +30,81 @@ class _HomepageState extends State<Homepage> {
         backgroundColor: Colors.red,
         elevation: 0,
         centerTitle: false,
-        title: Text("UBX Interview",style: TextStyle(color: Colors.white,fontWeight:FontWeight.w900),),),
-      
+        title: const Text(
+          "UBX Interview",
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.w900,
+          ),
+        ),
+      ),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(8.0),
           child: Column(
             children: [
-              SizedBox(height: 20,),
+              const SizedBox(height: 20),
               Container(
                 height: 200,
                 width: MediaQuery.of(context).size.width,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(20),
-                  gradient: LinearGradient(
+                  gradient: const LinearGradient(
                     begin: AlignmentGeometry.centerLeft,
                     end: AlignmentGeometry.bottomRight,
-                    colors:[
-                    Colors.red,
-                    Colors.black
-                  ],
-                  
+                    colors: [
+                      Colors.red,
+                      Colors.black
+                    ],
                   ),
                   boxShadow: [
-                          BoxShadow(
-                            color: Color.fromARGB(255, 243, 0, 0).withValues(alpha:0.3),
-                            spreadRadius: 0,
-                            blurRadius: 20,
-                            offset: Offset(0, 10),
-                          ),
-                        ],
+                    BoxShadow(
+                      color: const Color.fromARGB(255, 243, 0, 0).withValues(alpha: 0.3),
+                      spreadRadius: 0,
+                      blurRadius: 20,
+                      offset: const Offset(0, 10),
+                    ),
+                  ],
                 ),
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
+                child: const Padding(
+                  padding: EdgeInsets.all(8.0),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.start,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Padding(
-                        padding: const EdgeInsets.only(top:8.0,left: 8,right: 8),
-                        child: Text("Hi Mr..",style: TextStyle(color: Colors.white,fontSize: 20,fontWeight: FontWeight.w500),),
+                        padding: EdgeInsets.only(top: 8.0, left: 8, right: 8),
+                        child: Text(
+                          "Hi Mr..",
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 20,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
                       ),
-                      SizedBox(height: 0,),
+                      SizedBox(height: 0),
                       Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Text("Gaspar Giddson",style: TextStyle(color: Colors.white,fontSize: 20,fontWeight: FontWeight.w300),),
+                        padding: EdgeInsets.all(8.0),
+                        child: Text(
+                          "Gaspar Giddson",
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 20,
+                            fontWeight: FontWeight.w300,
+                          ),
+                        ),
                       )
                     ],
                   ),
-                ), 
+                ),
               ),
-               Container(
-                child:Padding(
+              Container(
+                child: Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: Column(
                     children: [
-                      SizedBox(height: 20),
-                      
+                      const SizedBox(height: 20),
                       ProfileOption(
                         icon: Icons.wallet,
                         title: 'Investments',
@@ -97,11 +114,11 @@ class _HomepageState extends State<Homepage> {
                     ],
                   ),
                 ),
-               )
+              )
             ],
           ),
         ),
-        ),
+      ),
     );
   }
 }

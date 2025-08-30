@@ -1,10 +1,12 @@
+// lib/pages/LoginPage.dart
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:local_auth/local_auth.dart';
-import 'package:ubx_practical_mobile/pages/Homepage.dart';
-import 'package:ubx_practical_mobile/pages/LandingPage.dart';
 import 'package:ubx_practical_mobile/pages/RegisterPage.dart';
+import 'package:ubx_practical_mobile/services/app_lockout_service.dart';
 import 'package:ubx_practical_mobile/widgets/InputWidget.dart';
 import 'package:ubx_practical_mobile/widgets/OtherSigninButton.dart';
+import 'package:ubx_practical_mobile/providers/app_lock_provider.dart';
 
 class LoginPage extends StatefulWidget {
   @override
@@ -52,20 +54,27 @@ class _LoginPageState extends State<LoginPage> {
             backgroundColor: Colors.green,
           ),
         );
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => Landingpage()),
-        );
         
+        // Mark user as logged in using Provider
+        final appLockProvider = Provider.of<AppLockProvider>(context, listen: false);
+        appLockProvider.setUserLoggedIn();
+        print("Logged in here successful ....");
+        _navigateToLandingPage();
       }
     } catch (e) {
       print("error $e");
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Biometric authentication failed $e'),backgroundColor: Colors.red,),
+        SnackBar(content: Text('Biometric authentication failed $e'), backgroundColor: Colors.red,),
       );
     }
   }
-
+void _navigateToLandingPage() {
+  if (mounted) {
+    // Reset lockout service when logging in
+    AppLockoutService().reset();
+    Navigator.of(context).pushNamedAndRemoveUntil('/landingpage', (route) => false);
+  }
+}
   void _login() {
     if (_formKey.currentState!.validate()) {
       setState(() {
@@ -84,10 +93,11 @@ class _LoginPageState extends State<LoginPage> {
           ),
         );
         
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => Landingpage()),
-        );
+        // Mark user as logged in using Provider
+        final appLockProvider = Provider.of<AppLockProvider>(context, listen: false);
+        appLockProvider.setUserLoggedIn();
+        
+        Navigator.pushReplacementNamed(context, '/landingpage');
       });
     }
   }
@@ -105,7 +115,6 @@ class _LoginPageState extends State<LoginPage> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-       
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -293,7 +302,6 @@ class _LoginPageState extends State<LoginPage> {
                       iconColor: Colors.greenAccent,
                       onPressed: () => _authenticateWithBiometrics(),
                     ),
-                    
                   ],
                 ),
 
@@ -306,4 +314,3 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 }
-

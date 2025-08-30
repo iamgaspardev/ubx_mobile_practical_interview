@@ -1,4 +1,3 @@
-// lib/pages/ProfilePage.dart
 import 'package:flutter/material.dart';
 import 'package:ubx_practical_mobile/widgets/ProfileOptions.dart';
 
