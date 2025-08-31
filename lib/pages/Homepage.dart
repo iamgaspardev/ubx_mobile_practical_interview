@@ -15,7 +15,7 @@ class _HomepageState extends State<Homepage> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
-        backgroundColor: const Color.fromARGB(255, 243, 0, 0),
+        backgroundColor: Colors.green,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       ),
@@ -27,12 +27,12 @@ class _HomepageState extends State<Homepage> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: Colors.red,
+        backgroundColor: Colors.white,
         elevation: 0,
         centerTitle: false,
         title: const Text(
           "UBX Interview",
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900),
+          style: TextStyle(color: Colors.green, fontWeight: FontWeight.w900),
         ),
       ),
       body: SafeArea(
@@ -51,16 +51,11 @@ class _HomepageState extends State<Homepage> {
                       gradient: LinearGradient(
                         begin: Alignment.centerLeft,
                         end: Alignment.bottomRight,
-                        colors: [Colors.red, Colors.black],
+                        colors: [Colors.green, Colors.greenAccent],
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: const Color.fromARGB(
-                            255,
-                            243,
-                            0,
-                            0,
-                          ).withValues(alpha: 0.3),
+                          color: Colors.green.withValues(alpha: 0.3),
                           spreadRadius: 0,
                           blurRadius: 20,
                           offset: const Offset(0, 10),

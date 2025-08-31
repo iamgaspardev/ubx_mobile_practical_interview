@@ -173,30 +173,6 @@ class UserProvider extends ChangeNotifier {
     }
   }
 
-  // Update profile image
-  Future<bool> updateProfileImage(String imagePath) async {
-    _setLoading(true);
-    _clearError();
-
-    try {
-      final response = await _apiService.updateProfile();
-
-      if (response.success && response.data != null) {
-        _user = response.data;
-        notifyListeners();
-        return true;
-      } else {
-        _setError(response.errorMessage);
-        return false;
-      }
-    } catch (e) {
-      _setError('Profile image update failed: $e');
-      return false;
-    } finally {
-      _setLoading(false);
-    }
-  }
-
   // Refresh user data
   Future<void> refreshUserData() async {
     if (_authState == AuthState.authenticated) {
@@ -257,6 +233,52 @@ class UserProvider extends ChangeNotifier {
   // Check if user has a specific email
   bool hasEmail(String email) {
     return _user?.email.toLowerCase() == email.toLowerCase();
+  }
+
+  Future<bool> updateProfileImage(String imagePath) async {
+    _setLoading(true);
+    _clearError();
+
+    try {
+      final response = await _apiService.updateProfileImage(imagePath);
+
+      if (response.success && response.data != null) {
+        _user = response.data;
+        notifyListeners();
+        return true;
+      } else {
+        _setError(response.message ?? 'Failed to update profile image');
+        return false;
+      }
+    } catch (e) {
+      _setError('Profile image update failed: $e');
+      return false;
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  Future<bool> removeProfileImage() async {
+    _setLoading(true);
+    _clearError();
+
+    try {
+      final response = await _apiService.removeProfileImage();
+
+      if (response.success && response.data != null) {
+        _user = response.data;
+        notifyListeners();
+        return true;
+      } else {
+        _setError(response.message ?? 'Failed to remove profile image');
+        return false;
+      }
+    } catch (e) {
+      _setError('Failed to remove profile image: $e');
+      return false;
+    } finally {
+      _setLoading(false);
+    }
   }
 
   @override

@@ -94,18 +94,15 @@ class _InputWidgetState extends State<InputWidget> {
         ),
         decoration: InputDecoration(
           hintText: widget.hintText,
-          hintStyle: TextStyle(
-            color: Colors.grey[500],
-            fontSize: 16,
-          ),
+          hintStyle: TextStyle(color: Colors.grey[500], fontSize: 16),
           prefixIcon: widget.prefixIcon != null
               ? Icon(
                   widget.prefixIcon,
-                  color: _isFocused 
-                      ? Colors.red
-                      : widget.enabled 
-                          ? Colors.grey[500] 
-                          : Colors.grey[400],
+                  color: _isFocused
+                      ? Colors.green
+                      : widget.enabled
+                      ? Colors.grey[500]
+                      : Colors.grey[400],
                   size: 20,
                 )
               : null,
@@ -116,19 +113,21 @@ class _InputWidgetState extends State<InputWidget> {
                     color: widget.enabled ? Colors.grey[500] : Colors.grey[400],
                     size: 20,
                   ),
-                  onPressed: widget.enabled ? () {
-                    setState(() {
-                      _obscureText = !_obscureText;
-                    });
-                  } : null,
+                  onPressed: widget.enabled
+                      ? () {
+                          setState(() {
+                            _obscureText = !_obscureText;
+                          });
+                        }
+                      : null,
                 )
               : null,
           filled: true,
-          fillColor: _isFocused 
-              ? Colors.white 
-              : widget.enabled 
-                  ? Colors.grey[50] 
-                  : Colors.grey[100],
+          fillColor: _isFocused
+              ? Colors.white
+              : widget.enabled
+              ? Colors.grey[50]
+              : Colors.grey[100],
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(50),
             borderSide: BorderSide(color: Colors.grey[300]!, width: 1),
@@ -139,28 +138,25 @@ class _InputWidgetState extends State<InputWidget> {
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(50),
-            borderSide: BorderSide(color: Colors.red, width: 2),
+            borderSide: BorderSide(color: Colors.green, width: 2),
           ),
           errorBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(50),
-            borderSide: BorderSide(color: Colors.red, width: 1),
+            borderSide: BorderSide(color: Colors.green, width: 1),
           ),
           focusedErrorBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(50),
-            borderSide: BorderSide(color: Colors.red, width: 2),
+            borderSide: BorderSide(color: Colors.green, width: 2),
           ),
           disabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(50),
             borderSide: BorderSide(color: Colors.grey[300]!, width: 1),
           ),
           contentPadding: EdgeInsets.symmetric(
-            horizontal: 16, 
-            vertical: widget.maxLines > 1 ? 12 : 16
+            horizontal: 16,
+            vertical: widget.maxLines > 1 ? 12 : 16,
           ),
-          counterStyle: TextStyle(
-            color: Colors.grey[600],
-            fontSize: 12,
-          ),
+          counterStyle: TextStyle(color: Colors.grey[600], fontSize: 12),
         ),
       ),
     );

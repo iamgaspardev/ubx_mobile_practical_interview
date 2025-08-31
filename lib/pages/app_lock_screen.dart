@@ -17,35 +17,37 @@ class _AppLockScreenState extends State<AppLockScreen> {
   void initState() {
     super.initState();
     // Automatically attempt authentication when lock screen is shown
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _authenticate();
-    });
+    // WidgetsBinding.instance.addPostFrameCallback((_) {
+    //   _authenticate();
+    // });
   }
 
   Future<void> _authenticate() async {
     if (_isAuthenticating || !mounted) return;
-    
+
     setState(() {
       _isAuthenticating = true;
     });
 
-    final appLockProvider = Provider.of<AppLockProvider>(context, listen: false);
+    final appLockProvider = Provider.of<AppLockProvider>(
+      context,
+      listen: false,
+    );
 
     try {
       final bool success = await appLockProvider.authenticate(
-        reason: 'Please authenticate to access UBX Practical'
+        reason: 'Please authenticate to access UBX Practical',
       );
 
       if (!mounted) return;
 
       if (success) {
-        // Authentication successful - navigate back to landing page
-        print("Authentication successful - navigating to landing page");
         // Reset lockout service
         final lockoutService = AppLockoutService();
         lockoutService.reset();
-        // Navigate back to landing page
-        Navigator.of(context).pushNamedAndRemoveUntil('/landingpage', (route) => false);
+        Navigator.of(
+          context,
+        ).pushNamedAndRemoveUntil('/landingpage', (route) => false);
       } else {
         // Authentication failed
         print("Authentication failed");
@@ -65,14 +67,9 @@ class _AppLockScreenState extends State<AppLockScreen> {
     }
   }
 
-  // Remove this method entirely - navigation should not happen from lock screen
-  // void _navigateToLandingPage() {
-  //   ...
-  // }
-
   void _showAuthenticationFailedDialog() {
     if (!mounted) return;
-    
+
     try {
       showDialog(
         context: context,
@@ -80,12 +77,14 @@ class _AppLockScreenState extends State<AppLockScreen> {
         builder: (BuildContext dialogContext) {
           return AlertDialog(
             title: const Text('Authentication Failed'),
-            content: const Text('Please try authenticating again to access the app.'),
+            content: const Text(
+              'Please try authenticating again to access the app.',
+            ),
             actions: [
               TextButton(
                 onPressed: () {
                   Navigator.of(dialogContext).pop();
-                  // Small delay to ensure dialog closes before retry
+
                   Future.delayed(Duration(milliseconds: 100), () {
                     if (mounted) {
                       _authenticate();
@@ -99,8 +98,6 @@ class _AppLockScreenState extends State<AppLockScreen> {
         },
       );
     } catch (e) {
-      print("Error showing dialog: $e");
-      // If dialog fails, just retry authentication after a delay
       Future.delayed(Duration(milliseconds: 500), () {
         if (mounted) {
           _authenticate();
@@ -118,10 +115,7 @@ class _AppLockScreenState extends State<AppLockScreen> {
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [
-              Colors.red.shade800,
-              Colors.black,
-            ],
+            colors: [Colors.green.shade800, Colors.black],
           ),
         ),
         child: SafeArea(
@@ -147,9 +141,9 @@ class _AppLockScreenState extends State<AppLockScreen> {
                     color: Colors.white,
                   ),
                 ),
-                
+
                 const SizedBox(height: 40),
-                
+
                 // App Name
                 const Text(
                   'UBX Practical',
@@ -159,21 +153,18 @@ class _AppLockScreenState extends State<AppLockScreen> {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                
+
                 const SizedBox(height: 16),
-                
+
                 // Authentication message
                 const Text(
                   'App is locked for your security',
-                  style: TextStyle(
-                    color: Colors.white70,
-                    fontSize: 16,
-                  ),
+                  style: TextStyle(color: Colors.white70, fontSize: 16),
                   textAlign: TextAlign.center,
                 ),
-                
+
                 const SizedBox(height: 60),
-                
+
                 // Authentication button or loading indicator
                 if (_isAuthenticating)
                   Column(
@@ -184,10 +175,7 @@ class _AppLockScreenState extends State<AppLockScreen> {
                       const SizedBox(height: 16),
                       const Text(
                         'Authenticating...',
-                        style: TextStyle(
-                          color: Colors.white70,
-                          fontSize: 14,
-                        ),
+                        style: TextStyle(color: Colors.white70, fontSize: 14),
                       ),
                     ],
                   )
@@ -196,7 +184,10 @@ class _AppLockScreenState extends State<AppLockScreen> {
                     children: [
                       ElevatedButton.icon(
                         onPressed: _authenticate,
-                        icon: const Icon(Icons.fingerprint, color: Colors.white),
+                        icon: const Icon(
+                          Icons.fingerprint,
+                          color: Colors.white,
+                        ),
                         label: const Text(
                           'Authenticate',
                           style: TextStyle(
@@ -206,7 +197,7 @@ class _AppLockScreenState extends State<AppLockScreen> {
                           ),
                         ),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.red,
+                          backgroundColor: Colors.green,
                           minimumSize: const Size(200, 50),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(25),
@@ -216,10 +207,7 @@ class _AppLockScreenState extends State<AppLockScreen> {
                       const SizedBox(height: 16),
                       const Text(
                         'Tap to unlock with biometrics or device credentials',
-                        style: TextStyle(
-                          color: Colors.white60,
-                          fontSize: 12,
-                        ),
+                        style: TextStyle(color: Colors.white60, fontSize: 12),
                         textAlign: TextAlign.center,
                       ),
                     ],

@@ -14,10 +14,7 @@ class _LandingpageState extends State<Landingpage> {
   int _selectedIndex = 0;
   final AppLockoutService _lockoutService = AppLockoutService();
 
-  final List<Widget> _pages = [
-    const Homepage(),
-    ProfilePageContent(),
-  ];
+  final List<Widget> _pages = [const Homepage(), ProfilePageContent()];
 
   @override
   void initState() {
@@ -70,7 +67,7 @@ class _LandingpageState extends State<Landingpage> {
             ),
           ],
           currentIndex: _selectedIndex,
-          selectedItemColor: const Color.fromARGB(255, 243, 0, 0),
+          selectedItemColor: Colors.green,
           unselectedItemColor: Colors.grey[400],
           backgroundColor: Colors.white,
           elevation: 0,

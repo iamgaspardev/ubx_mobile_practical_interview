@@ -136,9 +136,7 @@ class ApiService {
     try {
       await _storage.write(key: 'auth_token', value: token);
       _cachedToken = token;
-      print('✅ Token saved successfully');
     } catch (e) {
-      print('❌ Error saving token: $e');
       throw Exception('Failed to save authentication token');
     }
   }
@@ -150,11 +148,9 @@ class ApiService {
       final token = await _storage.read(key: 'auth_token');
       if (token != null) {
         _cachedToken = token;
-        print('✅ Token retrieved from storage');
       }
       return token;
     } catch (e) {
-      print('❌ Error retrieving token: $e');
       return null;
     }
   }
@@ -163,10 +159,7 @@ class ApiService {
     try {
       await _storage.delete(key: 'auth_token');
       _cachedToken = null;
-      print('✅ Token cleared successfully');
-    } catch (e) {
-      print('❌ Error clearing token: $e');
-    }
+    } catch (e) {}
   }
 
   Future<bool> hasValidToken() async {
@@ -181,7 +174,7 @@ class ApiService {
     required String password,
   }) async {
     try {
-      print('\n🔐 REGISTERING USER');
+      print('\n REGISTERING USER');
       print('Name: $name');
       print('Email: $email');
 
@@ -197,7 +190,6 @@ class ApiService {
     } on DioException catch (e) {
       return _handleDioError<AuthResponse>(e);
     } catch (e) {
-      print('❌ Unexpected registration error: $e');
       return ApiResponse<AuthResponse>(
         success: false,
         message: 'Registration failed: $e',
@@ -210,7 +202,7 @@ class ApiService {
     required String password,
   }) async {
     try {
-      print('\n🔐 LOGGING IN USER');
+      print('\n LOGGING IN USER');
       print('Email: $email');
 
       final requestData = {
@@ -224,7 +216,6 @@ class ApiService {
     } on DioException catch (e) {
       return _handleDioError<AuthResponse>(e);
     } catch (e) {
-      print('❌ Unexpected login error: $e');
       return ApiResponse<AuthResponse>(
         success: false,
         message: 'Login failed: $e',
@@ -257,14 +248,11 @@ class ApiService {
 
   Future<ApiResponse<bool>> logout() async {
     try {
-      print('\n🚪 LOGGING OUT USER');
-
-      // Try to call logout endpoint
+      // user logout
       try {
         await _dio.post('/logout');
-        print('✅ Server logout successful');
       } catch (e) {
-        print('⚠️ Server logout failed, continuing with local logout: $e');
+        print(' Server logout failed, continuing with local logout: $e');
       }
 
       // Always clear local token
@@ -276,7 +264,6 @@ class ApiService {
         data: true,
       );
     } catch (e) {
-      print('❌ Logout error: $e');
       // Even if there's an error, clear the token locally
       await clearToken();
 
@@ -291,15 +278,10 @@ class ApiService {
   // Profile API Methods
   Future<ApiResponse<User>> getCurrentUser() async {
     try {
-      print('\n👤 GETTING CURRENT USER');
-
       final response = await _dio.get('/user');
 
       if (response.data != null && response.data['success'] == true) {
         final user = User.fromJson(response.data['data']['user']);
-
-        print('✅ User data retrieved');
-        print('User: ${user.name} (${user.email})');
 
         return ApiResponse<User>(
           success: true,
@@ -315,7 +297,7 @@ class ApiService {
     } on DioException catch (e) {
       return _handleDioError<User>(e);
     } catch (e) {
-      print('❌ Unexpected error getting user: $e');
+      print(' Unexpected error getting user: $e');
       return ApiResponse<User>(
         success: false,
         message: 'Failed to get user data: $e',
@@ -331,23 +313,18 @@ class ApiService {
     String? passwordConfirmation,
   }) async {
     try {
-      print('\n✏️ UPDATING PROFILE');
-
       final data = <String, dynamic>{};
 
       if (name != null && name.isNotEmpty) {
         data['name'] = name.trim();
-        print('Updating name: $name');
       }
 
       if (email != null && email.isNotEmpty) {
         data['email'] = email.trim().toLowerCase();
-        print('Updating email: $email');
       }
 
       if (currentPassword != null && currentPassword.isNotEmpty) {
         data['current_password'] = currentPassword;
-        print('Changing password');
 
         if (password != null && password.isNotEmpty) {
           data['password'] = password;
@@ -360,7 +337,7 @@ class ApiService {
       if (response.data != null && response.data['success'] == true) {
         final user = User.fromJson(response.data['data']['user']);
 
-        print('✅ Profile updated successfully');
+        print(' Profile updated successfully');
 
         return ApiResponse<User>(
           success: true,
@@ -387,11 +364,6 @@ class ApiService {
   ApiResponse<T> _handleDioError<T>(DioException error) {
     String message = 'Network error occurred';
     Map<String, List<String>>? errors;
-
-    print('❌ DioException Type: ${error.type}');
-    print('❌ Status Code: ${error.response?.statusCode}');
-    print('❌ Response Data: ${error.response?.data}');
-
     if (error.response != null) {
       final responseData = error.response!.data;
 
@@ -476,9 +448,102 @@ class ApiService {
     try {
       await _storage.deleteAll();
       _cachedToken = null;
-      print('✅ All secure storage data cleared');
     } catch (e) {
       print('❌ Error clearing all data: $e');
+    }
+  }
+
+  Future<ApiResponse<User>> updateProfileImage(String imagePath) async {
+    try {
+      print('\n📸 UPLOADING PROFILE IMAGE');
+      print('Image path: $imagePath');
+
+      final file = File(imagePath);
+
+      // Validate file exists
+      if (!await file.exists()) {
+        throw Exception('Image file not found');
+      }
+
+      // Check file size (5MB limit)
+      final fileSize = await file.length();
+      if (fileSize > 5 * 1024 * 1024) {
+        throw Exception('Image size must be less than 5MB');
+      }
+
+      // Create multipart form data
+      final formData = FormData.fromMap({
+        'image': await MultipartFile.fromFile(
+          imagePath,
+          filename: 'profile_image.${imagePath.split('.').last}',
+        ),
+      });
+
+      final response = await _dio.post(
+        '/profile/image',
+        data: formData,
+        options: Options(headers: {'Content-Type': 'multipart/form-data'}),
+      );
+
+      if (response.data != null && response.data['success'] == true) {
+        final user = User.fromJson(response.data['data']['user']);
+
+        print('✅ Profile image updated successfully');
+
+        return ApiResponse<User>(
+          success: true,
+          message:
+              response.data['message'] ?? 'Profile image updated successfully',
+          data: user,
+        );
+      } else {
+        return ApiResponse<User>(
+          success: false,
+          message:
+              response.data?['message'] ?? 'Failed to update profile image',
+        );
+      }
+    } on DioException catch (e) {
+      return _handleDioError<User>(e);
+    } catch (e) {
+      return ApiResponse<User>(
+        success: false,
+        message: 'Profile image update failed: $e',
+      );
+    }
+  }
+
+  Future<ApiResponse<User>> removeProfileImage() async {
+    try {
+      print('\n🗑️ REMOVING PROFILE IMAGE');
+
+      final response = await _dio.delete('/profile/image');
+
+      if (response.data != null && response.data['success'] == true) {
+        final user = User.fromJson(response.data['data']['user']);
+
+        print('✅ Profile image removed successfully');
+
+        return ApiResponse<User>(
+          success: true,
+          message:
+              response.data['message'] ?? 'Profile image removed successfully',
+          data: user,
+        );
+      } else {
+        return ApiResponse<User>(
+          success: false,
+          message:
+              response.data?['message'] ?? 'Failed to remove profile image',
+        );
+      }
+    } on DioException catch (e) {
+      return _handleDioError<User>(e);
+    } catch (e) {
+      return ApiResponse<User>(
+        success: false,
+        message: 'Failed to remove profile image: $e',
+      );
     }
   }
 

@@ -130,7 +130,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
     } else {
       final errorMsg =
           userProvider.errorMessage ?? 'Registration failed. Please try again.';
-      _showMessage(errorMsg, Colors.red);
+      _showMessage(errorMsg, Colors.green);
 
       // Haptic feedback for error
       HapticFeedback.heavyImpact();
@@ -257,7 +257,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
-          'Create Account',
+          '',
           style: TextStyle(
             color: Colors.grey[800],
             fontWeight: FontWeight.w600,
@@ -357,7 +357,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
                                     _acceptTerms = value ?? false;
                                   });
                                 },
-                          activeColor: Colors.red,
+                          activeColor: Colors.green,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(4),
                           ),
@@ -376,7 +376,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
                                   TextSpan(
                                     text: 'Terms and Conditions',
                                     style: TextStyle(
-                                      color: Colors.red,
+                                      color: Colors.green,
                                       fontWeight: FontWeight.w600,
                                       decoration: TextDecoration.underline,
                                     ),
@@ -385,7 +385,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
                                   TextSpan(
                                     text: 'Privacy Policy',
                                     style: TextStyle(
-                                      color: Colors.red,
+                                      color: Colors.green,
                                       fontWeight: FontWeight.w600,
                                       decoration: TextDecoration.underline,
                                     ),
@@ -407,7 +407,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
                       child: ElevatedButton(
                         onPressed: userProvider.isLoading ? null : _register,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.red,
+                          backgroundColor: Colors.green,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(50),
                           ),
@@ -454,16 +454,16 @@ class _RegistrationPageState extends State<RegistrationPage> {
                       Container(
                         padding: EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                          color: Colors.red.shade50,
+                          color: Colors.green.shade50,
                           borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: Colors.red.shade200),
+                          border: Border.all(color: Colors.green.shade200),
                         ),
                         child: Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Icon(
                               Icons.error_outline,
-                              color: Colors.red,
+                              color: Colors.green,
                               size: 20,
                             ),
                             SizedBox(width: 8),
@@ -471,7 +471,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
                               child: Text(
                                 userProvider.errorMessage!,
                                 style: TextStyle(
-                                  color: Colors.red.shade700,
+                                  color: Colors.green.shade700,
                                   fontSize: 14,
                                 ),
                               ),
@@ -502,7 +502,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
                                   style: TextStyle(
                                     color: userProvider.isLoading
                                         ? Colors.grey
-                                        : Colors.red,
+                                        : Colors.green,
                                     fontWeight: FontWeight.w600,
                                     fontSize: 16,
                                   ),

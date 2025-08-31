@@ -6,10 +6,8 @@ import 'dart:async';
 class InactivityWarningModal extends StatefulWidget {
   final int countdownSeconds;
 
-  const InactivityWarningModal({
-    Key? key,
-    this.countdownSeconds = 10,
-  }) : super(key: key);
+  const InactivityWarningModal({Key? key, this.countdownSeconds = 10})
+    : super(key: key);
 
   @override
   _InactivityWarningModalState createState() => _InactivityWarningModalState();
@@ -27,20 +25,16 @@ class _InactivityWarningModalState extends State<InactivityWarningModal>
   void initState() {
     super.initState();
     _remainingSeconds = widget.countdownSeconds;
-    
+
     // Setup pulse animation for urgency
     _pulseController = AnimationController(
       duration: Duration(milliseconds: 600),
       vsync: this,
     );
-    _pulseAnimation = Tween<double>(
-      begin: 1.0,
-      end: 1.1,
-    ).animate(CurvedAnimation(
-      parent: _pulseController,
-      curve: Curves.easeInOut,
-    ));
-    
+    _pulseAnimation = Tween<double>(begin: 1.0, end: 1.1).animate(
+      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
+    );
+
     _startCountdown();
     _pulseController.repeat(reverse: true);
   }
@@ -51,11 +45,14 @@ class _InactivityWarningModalState extends State<InactivityWarningModal>
         setState(() {
           _remainingSeconds--;
         });
-        
+
         if (_remainingSeconds <= 0) {
           _countdownTimer?.cancel();
           // Let provider handle the timeout - NO NAVIGATOR CALLS
-          final appLockProvider = Provider.of<AppLockProvider>(context, listen: false);
+          final appLockProvider = Provider.of<AppLockProvider>(
+            context,
+            listen: false,
+          );
           appLockProvider.lockApp();
         }
       }
@@ -64,9 +61,11 @@ class _InactivityWarningModalState extends State<InactivityWarningModal>
 
   void _handleContinue() {
     _countdownTimer?.cancel();
-    // REMOVED: _pulseController.dispose(); - Let dispose() handle this
-    
-    final appLockProvider = Provider.of<AppLockProvider>(context, listen: false);
+
+    final appLockProvider = Provider.of<AppLockProvider>(
+      context,
+      listen: false,
+    );
     appLockProvider.dismissInactivityWarning();
   }
 
@@ -89,11 +88,7 @@ class _InactivityWarningModalState extends State<InactivityWarningModal>
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
-          BoxShadow(
-            color: Colors.black26,
-            blurRadius: 20,
-            spreadRadius: 2,
-          ),
+          BoxShadow(color: Colors.black26, blurRadius: 20, spreadRadius: 2),
         ],
       ),
       child: AnimatedBuilder(
@@ -118,9 +113,9 @@ class _InactivityWarningModalState extends State<InactivityWarningModal>
                     color: Colors.white,
                   ),
                 ),
-                
+
                 SizedBox(height: 20),
-                
+
                 // Title
                 Text(
                   'Inactivity Detected',
@@ -131,9 +126,9 @@ class _InactivityWarningModalState extends State<InactivityWarningModal>
                   ),
                   textAlign: TextAlign.center,
                 ),
-                
+
                 SizedBox(height: 12),
-                
+
                 // Message
                 Text(
                   'You\'ve been inactive for a while.\nDo you want to continue using the app?',
@@ -144,18 +139,22 @@ class _InactivityWarningModalState extends State<InactivityWarningModal>
                   ),
                   textAlign: TextAlign.center,
                 ),
-                
+
                 SizedBox(height: 24),
-                
+
                 // Countdown Timer
                 Container(
                   width: 100,
                   height: 100,
                   decoration: BoxDecoration(
-                    color: _remainingSeconds <= 3 ? Colors.red.shade50 : Colors.grey.shade50,
+                    color: _remainingSeconds <= 3
+                        ? Colors.green.shade50
+                        : Colors.grey.shade50,
                     shape: BoxShape.circle,
                     border: Border.all(
-                      color: _remainingSeconds <= 3 ? Colors.red : Colors.grey.shade300,
+                      color: _remainingSeconds <= 3
+                          ? Colors.green
+                          : Colors.grey.shade300,
                       width: 3,
                     ),
                   ),
@@ -168,23 +167,27 @@ class _InactivityWarningModalState extends State<InactivityWarningModal>
                           style: TextStyle(
                             fontSize: 32,
                             fontWeight: FontWeight.bold,
-                            color: _remainingSeconds <= 3 ? Colors.red : Colors.black87,
+                            color: _remainingSeconds <= 3
+                                ? Colors.green
+                                : Colors.black87,
                           ),
                         ),
                         Text(
                           'seconds',
                           style: TextStyle(
                             fontSize: 12,
-                            color: _remainingSeconds <= 3 ? Colors.red : Colors.black54,
+                            color: _remainingSeconds <= 3
+                                ? Colors.green
+                                : Colors.black54,
                           ),
                         ),
                       ],
                     ),
                   ),
                 ),
-                
+
                 SizedBox(height: 24),
-                
+
                 // Warning message for final countdown
                 if (_remainingSeconds <= 3)
                   Padding(
@@ -193,12 +196,12 @@ class _InactivityWarningModalState extends State<InactivityWarningModal>
                       'App will lock automatically!',
                       style: TextStyle(
                         fontSize: 14,
-                        color: Colors.red,
+                        color: Colors.green,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
                   ),
-                
+
                 // Continue Button
                 SizedBox(
                   width: double.infinity,
@@ -206,7 +209,7 @@ class _InactivityWarningModalState extends State<InactivityWarningModal>
                   child: ElevatedButton(
                     onPressed: _handleContinue,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Color.fromARGB(255, 243, 0, 0),
+                      backgroundColor: Colors.green[400],
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(25),
                       ),
@@ -222,16 +225,13 @@ class _InactivityWarningModalState extends State<InactivityWarningModal>
                     ),
                   ),
                 ),
-                
+
                 SizedBox(height: 12),
-                
+
                 // Info text
                 Text(
                   'Tap "Yes, Continue" to keep using the app',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.black38,
-                  ),
+                  style: TextStyle(fontSize: 12, color: Colors.black38),
                   textAlign: TextAlign.center,
                 ),
               ],

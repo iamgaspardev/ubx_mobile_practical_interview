@@ -167,7 +167,7 @@ class _LoginPageState extends State<LoginPage>
         icon = Icons.check_circle;
         break;
       case MessageType.error:
-        backgroundColor = Colors.red;
+        backgroundColor = Colors.green;
         icon = Icons.error;
         break;
       case MessageType.warning:
@@ -297,7 +297,7 @@ class _LoginPageState extends State<LoginPage>
           ),
           title: Row(
             children: [
-              Icon(Icons.lock_reset, color: Colors.red),
+              Icon(Icons.lock_reset, color: Colors.green[400]),
               SizedBox(width: 8),
               Text('Reset Password'),
             ],
@@ -337,7 +337,7 @@ class _LoginPageState extends State<LoginPage>
                 );
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.red,
+                backgroundColor: Colors.green[400],
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -378,11 +378,11 @@ class _LoginPageState extends State<LoginPage>
                           width: 100,
                           height: 100,
                           decoration: BoxDecoration(
-                            color: Colors.red,
+                            color: Colors.green[400],
                             borderRadius: BorderRadius.circular(50),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.red.withOpacity(0.3),
+                                color: Colors.green.withOpacity(0.3),
                                 spreadRadius: 0,
                                 blurRadius: 20,
                                 offset: Offset(0, 8),
@@ -473,7 +473,7 @@ class _LoginPageState extends State<LoginPage>
                                             _rememberMe = value ?? false;
                                           });
                                         },
-                                  activeColor: Colors.red,
+                                  activeColor: Colors.green[400],
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(4),
                                   ),
@@ -496,7 +496,7 @@ class _LoginPageState extends State<LoginPage>
                               child: Text(
                                 'Forgot Password?',
                                 style: TextStyle(
-                                  color: Colors.red,
+                                  color: Colors.green[400],
                                   fontWeight: FontWeight.w600,
                                   fontSize: 14,
                                 ),
@@ -514,7 +514,7 @@ class _LoginPageState extends State<LoginPage>
                                 ? null
                                 : _performLogin,
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.red,
+                              backgroundColor: Colors.green[400],
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(50),
                               ),
@@ -563,12 +563,12 @@ class _LoginPageState extends State<LoginPage>
                         //         ? null
                         //         : _performLogin,
                         //     style: ElevatedButton.styleFrom(
-                        //       backgroundColor: Colors.red,
+                        //       backgroundColor: Colors.green[400],
                         //       shape: RoundedRectangleBorder(
                         //         borderRadius: BorderRadius.circular(16),
                         //       ),
                         //       elevation: 0,
-                        //       shadowColor: Colors.red.withOpacity(0.3),
+                        //       shadowColor: Colors.green[400].withOpacity(0.3),
                         //     ),
                         //     child: userProvider.isLoading
                         //         ? Row(
@@ -625,7 +625,7 @@ class _LoginPageState extends State<LoginPage>
                                       style: TextStyle(
                                         color: userProvider.isLoading
                                             ? Colors.grey
-                                            : Colors.red,
+                                            : Colors.green[400],
                                         fontWeight: FontWeight.w600,
                                         fontSize: 16,
                                         decoration: TextDecoration.underline,
