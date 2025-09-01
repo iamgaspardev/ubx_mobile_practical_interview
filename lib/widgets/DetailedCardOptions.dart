@@ -1,17 +1,19 @@
 import 'package:flutter/material.dart';
 
-class ProfileOption extends StatelessWidget {
+class DetailedCardOption extends StatelessWidget {
   final IconData icon;
   final String title;
   final String subtitle;
   final VoidCallback onTap;
+  final Color? backgroundColor;
 
-  const ProfileOption({
+  const DetailedCardOption({
     Key? key,
     required this.icon,
     required this.title,
     required this.subtitle,
-    required this.onTap, required MaterialColor color,
+    required this.onTap,
+    this.backgroundColor,
   }) : super(key: key);
 
   @override
@@ -21,7 +23,9 @@ class ProfileOption extends StatelessWidget {
       child: Container(
         padding: EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color:
+              backgroundColor ??
+              Colors.white, // Use provided color or default to white
           borderRadius: BorderRadius.circular(15),
           boxShadow: [
             BoxShadow(
@@ -40,11 +44,7 @@ class ProfileOption extends StatelessWidget {
                 color: Colors.grey[100],
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: Icon(
-                icon,
-                color: Colors.grey[700],
-                size: 22,
-              ),
+              child: Icon(icon, color: Colors.grey[700], size: 22),
             ),
             SizedBox(width: 15),
             Expanded(
@@ -61,19 +61,11 @@ class ProfileOption extends StatelessWidget {
                   ),
                   Text(
                     subtitle,
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey[600],
-                    ),
+                    style: TextStyle(fontSize: 14, color: Colors.grey[600]),
                   ),
                 ],
               ),
             ),
-            // Icon(
-            //   Icons.arrow_forward_ios,
-            //   size: 16,
-            //   color: Colors.grey[400],
-            // ),
           ],
         ),
       ),

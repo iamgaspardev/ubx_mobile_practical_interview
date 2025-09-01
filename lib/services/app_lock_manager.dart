@@ -16,16 +16,17 @@ class AppLockManager {
 
   // Inactivity timeout
   final Duration inactivityTimeout = Duration(seconds: 30);
-  
+
   // Warning period before locking
   final Duration warningPeriod = Duration(seconds: 10);
-  
+
   // Callback for showing inactivity warning
-  Function(BuildContext context, Function onContinue, Function onTimeout)? onShowInactivityWarning;
-  
+  Function(BuildContext context, Function onContinue, Function onTimeout)?
+  onShowInactivityWarning;
+
   // Store current context for modal display
   BuildContext? _currentContext;
-  
+
   // Callback to trigger UI rebuild when lock state changes
   VoidCallback? _onLockStateChanged;
 
@@ -37,7 +38,7 @@ class AppLockManager {
     _isAuthenticated = false;
     _lastActiveTime = DateTime.now();
     _cancelInactivityTimer();
-    
+
     // Trigger UI rebuild
     if (_onLockStateChanged != null) {
       _onLockStateChanged!();
@@ -53,17 +54,17 @@ class AppLockManager {
 
   void updateLastActiveTime() {
     _lastActiveTime = DateTime.now();
-    
+
     if (_isLocked && _isAuthenticated) {
       _isLocked = false;
     }
-    
+
     _startInactivityTimer();
   }
 
-  // Called when app goes to background - IMMEDIATE LOCK
+  // Called when app goes to background
   void onAppBackgrounded() {
-    // print(" App backgrounded - locking immediately");
+    // App backgrounded - locking immediately";
     lockApp();
   }
 
@@ -78,16 +79,19 @@ class AppLockManager {
     }
   }
 
-  void setInactivityWarningCallback(Function(BuildContext context, Function onContinue, Function onTimeout) callback) {
+  void setInactivityWarningCallback(
+    Function(BuildContext context, Function onContinue, Function onTimeout)
+    callback,
+  ) {
     onShowInactivityWarning = callback;
     print("🔧 Inactivity warning callback set: ${callback != null}");
   }
-  
+
   void setCurrentContext(BuildContext context) {
     _currentContext = context;
     print("🔧 Current context set: ${context != null}");
   }
-  
+
   void setLockStateChangeCallback(VoidCallback callback) {
     _onLockStateChanged = callback;
     print("🔧 Lock state change callback set");
@@ -95,26 +99,20 @@ class AppLockManager {
 
   void _startInactivityTimer() {
     _cancelInactivityTimer();
-    
+
     // inactivityTimeout - warningPeriod
     Duration warningDelay = inactivityTimeout - warningPeriod;
-    
-    print("🕐 Starting inactivity timer with ${warningDelay.inSeconds} seconds delay");
-    
+
     _inactivityTimer = Timer(warningDelay, () {
-      
       // Show warning modal if callback is set
       if (onShowInactivityWarning != null && _currentContext != null) {
-        // print("All conditions met - showing modal");
         onShowInactivityWarning!(
           _currentContext!,
           () {
             // User chose to continue
-            // print("User chose to continue");
             updateLastActiveTime();
           },
           () {
-            // Warning timeout - close app
             _closeApp();
           },
         );
@@ -134,7 +132,9 @@ class AppLockManager {
     _inactivityTimer = null;
   }
 
-  Future<bool> authenticate({String reason = 'Please authenticate to continue'}) async {
+  Future<bool> authenticate({
+    String reason = 'Please authenticate to continue',
+  }) async {
     try {
       final bool isAvailable = await _localAuth.canCheckBiometrics;
       final bool isDeviceSupported = await _localAuth.isDeviceSupported();
@@ -143,7 +143,8 @@ class AppLockManager {
         return await _authenticateWithDeviceCredentials(reason);
       }
 
-      final List<BiometricType> availableBiometrics = await _localAuth.getAvailableBiometrics();
+      final List<BiometricType> availableBiometrics = await _localAuth
+          .getAvailableBiometrics();
 
       if (availableBiometrics.isEmpty) {
         return await _authenticateWithDeviceCredentials(reason);

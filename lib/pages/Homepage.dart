@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:ubx_practical_mobile/providers/app_lock_provider.dart';
-import 'package:ubx_practical_mobile/widgets/ProfileOptions.dart';
+import 'package:ubx_practical_mobile/widgets/DetailedCardOptions.dart';
 import 'package:ubx_practical_mobile/providers/user_provider.dart';
 
 class Homepage extends StatefulWidget {
@@ -154,11 +154,12 @@ class _HomepageState extends State<Homepage> {
                       child: Column(
                         children: [
                           const SizedBox(height: 20),
-                          ProfileOption(
+                          DetailedCardOption(
                             icon: Icons.wallet,
                             title: 'BigData Management',
                             subtitle: 'Manage your Bigdata',
                             onTap: () => _updateLastActiveTime(context),
+                            backgroundColor: Colors.green[50],
                           ),
                         ],
                       ),

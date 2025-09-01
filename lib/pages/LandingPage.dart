@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:ubx_practical_mobile/pages/Homepage.dart';
 import 'package:ubx_practical_mobile/pages/UserProfilePage.dart';
+import 'package:ubx_practical_mobile/providers/app_lock_provider.dart';
 import 'package:ubx_practical_mobile/services/app_lockout_service.dart';
 
 class Landingpage extends StatefulWidget {
@@ -27,15 +29,24 @@ class _LandingpageState extends State<Landingpage> {
     if (_selectedIndex == 0) {
       _lockoutService.enableLockout();
     } else {
-      _lockoutService.enableLockout();
+      _lockoutService.disableLockout();
     }
   }
 
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
+      _updateLastActiveTime(context);
       _updateLockoutStatus();
     });
+  }
+
+  void _updateLastActiveTime(BuildContext context) {
+    final appLockProvider = Provider.of<AppLockProvider>(
+      context,
+      listen: false,
+    );
+    appLockProvider.updateLastActiveTime();
   }
 
   @override
@@ -43,16 +54,7 @@ class _LandingpageState extends State<Landingpage> {
     return Scaffold(
       body: _pages[_selectedIndex],
       bottomNavigationBar: Container(
-        decoration: BoxDecoration(
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              spreadRadius: 0,
-              blurRadius: 10,
-              offset: const Offset(0, -5),
-            ),
-          ],
-        ),
+        decoration: BoxDecoration(color: Colors.green[100]),
         child: BottomNavigationBar(
           items: const <BottomNavigationBarItem>[
             BottomNavigationBarItem(
@@ -60,6 +62,7 @@ class _LandingpageState extends State<Landingpage> {
               activeIcon: Icon(Icons.home),
               label: 'Home',
             ),
+
             BottomNavigationBarItem(
               icon: Icon(Icons.person),
               activeIcon: Icon(Icons.person),

@@ -21,6 +21,20 @@ class AppLockProvider with ChangeNotifier {
   bool get isAuthenticated => _isAuthenticated;
   bool get isUserLoggedIn => _isUserLoggedIn;
   bool get showingInactivityWarning => _showingInactivityWarning;
+  //this ia to controll image processing
+  bool _imageProcessingActive = false;
+  bool get isImageProcessingActive => _imageProcessingActive;
+
+  void setImageProcessingActive(bool active) {
+    _imageProcessingActive = active;
+    notifyListeners();
+    if (active) {
+      // print(' App lock disabled for image processing');
+    } else {
+      // print(' App lock re-enabled after image processing');
+      updateLastActiveTime();
+    }
+  }
 
   void setCurrentContext(BuildContext context) {
     _currentContext = context;
@@ -50,7 +64,12 @@ class AppLockProvider with ChangeNotifier {
       print("Ignoring lock - user not logged in yet");
       return;
     }
-    
+
+    // Don't lock if image processing is active
+    if (_imageProcessingActive) {
+      return;
+    }
+
     _isLocked = true;
     _isAuthenticated = false;
     _showingInactivityWarning = false;
@@ -75,31 +94,34 @@ class AppLockProvider with ChangeNotifier {
       print("Ignoring activity - user not logged in yet");
       return;
     }
-    
+
     _lastActiveTime = DateTime.now();
-    
+
     // If app was locked due to inactivity, unlock it when user becomes active
     if (_isLocked && _isAuthenticated) {
       _isLocked = false;
     }
-    
+
     // Hide warning if showing
     if (_showingInactivityWarning) {
       _showingInactivityWarning = false;
       notifyListeners();
     }
-    
+
     _startInactivityTimer();
     print("User activity detected");
   }
 
   void onAppBackgrounded() {
     if (!_isUserLoggedIn) {
-      print("App backgrounded but user not logged in - ignoring");
       return;
     }
-    
-    print("App backgrounded - locking immediately");
+
+    // Don't lock if image processing is active
+    if (_imageProcessingActive) {
+      return;
+    }
+
     lockApp();
   }
 
@@ -112,27 +134,28 @@ class AppLockProvider with ChangeNotifier {
 
   void _startInactivityTimer() {
     _cancelInactivityTimer();
-    
+
     Duration warningDelay = inactivityTimeout - warningPeriod;
-    
-    print("Starting inactivity timer with ${warningDelay.inSeconds} seconds delay");
-    
+
     _inactivityTimer = Timer(warningDelay, () {
-      print("Showing inactivity warning");
       _showInactivityWarning();
     });
   }
 
   void _showInactivityWarning() {
     if (!_isUserLoggedIn || _showingInactivityWarning) return;
-    
+
+    // Don't show warning if image processing is active
+    if (_imageProcessingActive) {
+      return;
+    }
+
     _showingInactivityWarning = true;
     notifyListeners();
-    
+
     // Start countdown timer for the warning
     Timer(warningPeriod, () {
       if (_showingInactivityWarning) {
-        print("Inactivity warning timeout - closing app");
         _showingInactivityWarning = false;
         lockApp();
       }
@@ -141,9 +164,8 @@ class AppLockProvider with ChangeNotifier {
 
   void dismissInactivityWarning() {
     if (!_showingInactivityWarning) return;
-    
+
     _showingInactivityWarning = false;
-    print("User chose to continue");
     updateLastActiveTime();
     notifyListeners();
   }
@@ -153,8 +175,9 @@ class AppLockProvider with ChangeNotifier {
     _inactivityTimer = null;
   }
 
-  Future<bool> authenticate({String reason = 'Please authenticate to continue'}) async {
-    
+  Future<bool> authenticate({
+    String reason = 'Please authenticate to continue',
+  }) async {
     try {
       final bool isAvailable = await _localAuth.canCheckBiometrics;
       final bool isDeviceSupported = await _localAuth.isDeviceSupported();
@@ -163,7 +186,8 @@ class AppLockProvider with ChangeNotifier {
         return await _authenticateWithDeviceCredentials(reason);
       }
 
-      final List<BiometricType> availableBiometrics = await _localAuth.getAvailableBiometrics();
+      final List<BiometricType> availableBiometrics = await _localAuth
+          .getAvailableBiometrics();
 
       if (availableBiometrics.isEmpty) {
         return await _authenticateWithDeviceCredentials(reason);

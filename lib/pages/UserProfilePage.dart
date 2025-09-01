@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter/services.dart';
 import 'dart:io';
-import 'package:ubx_practical_mobile/widgets/ProfileOptions.dart';
+import 'package:ubx_practical_mobile/widgets/DetailedCardOptions.dart';
 import 'package:ubx_practical_mobile/providers/user_provider.dart';
 import 'package:ubx_practical_mobile/providers/app_lock_provider.dart';
 
@@ -172,20 +172,20 @@ class ProfilePageContent extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 24),
       child: Column(
         children: [
-          ProfileOption(
+          DetailedCardOption(
             icon: Icons.person_outline,
             title: 'Personal Information',
             subtitle: userProvider.user?.email ?? 'No email',
             onTap: () => _updateLastActiveTime(context),
-            color: Colors.green,
+            backgroundColor: Colors.white,
           ),
           const SizedBox(height: 12),
-          ProfileOption(
+          DetailedCardOption(
             icon: Icons.notifications_active_outlined,
             title: 'Notifications',
             subtitle: 'Manage your notifications',
             onTap: () => _updateLastActiveTime(context),
-            color: Colors.green,
+            backgroundColor: Colors.white,
           ),
           const SizedBox(height: 30),
           _buildLogoutButton(context, userProvider),
@@ -203,7 +203,7 @@ class ProfilePageContent extends StatelessWidget {
             ? null
             : () => _showLogoutDialog(context),
         style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.red[50],
+          backgroundColor: Colors.green[50],
           padding: const EdgeInsets.symmetric(vertical: 15),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(15),
@@ -373,8 +373,15 @@ class ProfilePageContent extends StatelessWidget {
   ) async {
     Navigator.pop(context);
 
+    // Get app lock provider
+    final appLockProvider = Provider.of<AppLockProvider>(
+      context,
+      listen: false,
+    );
+
     try {
-      print('🎬 Starting image selection from $source');
+      // DISABLE app lock BEFORE opening camera/gallery
+      appLockProvider.setImageProcessingActive(true);
 
       final ImagePicker picker = ImagePicker();
 
@@ -410,17 +417,23 @@ class ProfilePageContent extends StatelessWidget {
         }
 
         _showSnackBar(context, errorMessage);
+
+        // Re-enable app lock after error
+        appLockProvider.setImageProcessingActive(false);
         return;
       }
 
       if (imageFile == null) {
+        // User cancelled - re-enable app lock
+        appLockProvider.setImageProcessingActive(false);
         return;
       }
 
-      // Validate file
+      // Continue with image processing while lock is disabled
       final File file = File(imageFile.path);
       if (!await file.exists()) {
         _showSnackBar(context, 'Selected image file not found');
+        appLockProvider.setImageProcessingActive(false);
         return;
       }
 
@@ -428,19 +441,18 @@ class ProfilePageContent extends StatelessWidget {
       final int fileSizeInBytes = await file.length();
       final double fileSizeInMB = fileSizeInBytes / (1024 * 1024);
 
-      print('📁 File size: ${fileSizeInMB.toStringAsFixed(2)} MB');
-
       if (fileSizeInMB > 5) {
         _showSnackBar(
           context,
           'Image size (${fileSizeInMB.toStringAsFixed(1)} MB) exceeds 5MB limit',
         );
+        appLockProvider.setImageProcessingActive(false);
         return;
       }
 
       _showSnackBar(context, 'Uploading profile picture...');
 
-      // Upload to server
+      // Upload to server while lock is still disabled
       final success = await userProvider.updateProfileImage(imageFile.path);
 
       if (success) {
@@ -451,8 +463,14 @@ class ProfilePageContent extends StatelessWidget {
           userProvider.errorMessage ?? 'Failed to upload profile picture',
         );
       }
+
+      // Re-enable app lock after completion
+      appLockProvider.setImageProcessingActive(false);
     } catch (e) {
       _showSnackBar(context, 'An error occurred while selecting the image');
+
+      // Re-enable app lock on any error
+      appLockProvider.setImageProcessingActive(false);
     }
   }
 
@@ -462,7 +480,16 @@ class ProfilePageContent extends StatelessWidget {
   ) async {
     Navigator.pop(context);
 
+    // Get app lock provider
+    final appLockProvider = Provider.of<AppLockProvider>(
+      context,
+      listen: false,
+    );
+
     try {
+      // Disable app lock during image removal
+      appLockProvider.setImageProcessingActive(true);
+
       _showSnackBar(context, 'Removing profile picture...');
 
       final success = await userProvider.removeProfileImage();
@@ -475,8 +502,14 @@ class ProfilePageContent extends StatelessWidget {
           userProvider.errorMessage ?? 'Failed to remove profile picture',
         );
       }
+
+      // Re-enable app lock after completion
+      appLockProvider.setImageProcessingActive(false);
     } catch (e) {
       _showSnackBar(context, 'Failed to remove profile picture');
+
+      // Re-enable app lock on error
+      appLockProvider.setImageProcessingActive(false);
     }
   }
 
