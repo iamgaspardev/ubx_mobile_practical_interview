@@ -27,7 +27,7 @@ class _LandingpageState extends State<Landingpage> {
     if (_selectedIndex == 0) {
       _lockoutService.enableLockout();
     } else {
-      _lockoutService.disableLockout();
+      _lockoutService.enableLockout();
     }
   }
 

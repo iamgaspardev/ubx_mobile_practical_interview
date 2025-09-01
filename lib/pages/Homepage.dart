@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:ubx_practical_mobile/providers/app_lock_provider.dart';
 import 'package:ubx_practical_mobile/widgets/ProfileOptions.dart';
 import 'package:ubx_practical_mobile/providers/user_provider.dart';
 
@@ -11,6 +12,14 @@ class Homepage extends StatefulWidget {
 }
 
 class _HomepageState extends State<Homepage> {
+  void _updateLastActiveTime(BuildContext context) {
+    final appLockProvider = Provider.of<AppLockProvider>(
+      context,
+      listen: false,
+    );
+    appLockProvider.updateLastActiveTime();
+  }
+
   void _showSnackBar(BuildContext context, String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -147,10 +156,9 @@ class _HomepageState extends State<Homepage> {
                           const SizedBox(height: 20),
                           ProfileOption(
                             icon: Icons.wallet,
-                            title: 'Investments',
-                            subtitle: 'Manage your investments',
-                            onTap: () =>
-                                _showSnackBar(context, 'Investments tapped!'),
+                            title: 'BigData Management',
+                            subtitle: 'Manage your Bigdata',
+                            onTap: () => _updateLastActiveTime(context),
                           ),
                         ],
                       ),

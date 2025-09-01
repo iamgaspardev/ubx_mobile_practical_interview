@@ -11,7 +11,7 @@ class ProfileOption extends StatelessWidget {
     required this.icon,
     required this.title,
     required this.subtitle,
-    required this.onTap,
+    required this.onTap, required MaterialColor color,
   }) : super(key: key);
 
   @override

@@ -1,9 +1,9 @@
-// lib/services/api_service.dart
 import 'dart:convert';
 import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:device_info_plus/device_info_plus.dart';
+import 'package:ubx_practical_mobile/models/api_response.dart';
 import 'package:ubx_practical_mobile/models/auth_response.dart';
 import '../models/user_model.dart';
 
@@ -15,16 +15,27 @@ class ApiService {
   static const String BASE_URL = 'http://192.168.1.111:8000/api';
   late final Dio _dio;
 
+  // secure storage
   static const FlutterSecureStorage _storage = FlutterSecureStorage(
-    aOptions: AndroidOptions(encryptedSharedPreferences: true),
+    aOptions: AndroidOptions(
+      encryptedSharedPreferences: true,
+      keyCipherAlgorithm: KeyCipherAlgorithm.RSA_ECB_PKCS1Padding,
+      storageCipherAlgorithm: StorageCipherAlgorithm.AES_GCM_NoPadding,
+    ),
     iOptions: IOSOptions(
       accessibility: KeychainAccessibility.first_unlock_this_device,
+      accountName: 'com.ubx.practical.mobile',
     ),
   );
 
   String? _deviceId;
   String? _cachedToken;
   bool _isInitialized = false;
+
+  // Token management keys
+  static const String _tokenKey = 'auth_token_v2';
+  static const String _tokenTimestampKey = 'token_timestamp';
+  static const int _tokenExpiryHours = 24;
 
   Future<void> initialize() async {
     if (_isInitialized) return;
@@ -42,30 +53,20 @@ class ApiService {
       ),
     );
 
-    // Get device ID
     await _initializeDeviceId();
-
-    // Get cached token
     _cachedToken = await getToken();
-
     _setupInterceptors();
     _isInitialized = true;
-
-    print('ApiService initialized - BaseURL: $BASE_URL');
-    print('Device ID: $_deviceId');
-    print('Has cached token: ${_cachedToken != null}');
   }
 
   void _setupInterceptors() {
     _dio.interceptors.add(
       InterceptorsWrapper(
         onRequest: (options, handler) async {
-          // Add device ID to all requests
           if (_deviceId != null) {
             options.headers['X-Device-ID'] = _deviceId;
           }
 
-          // Add auth token if available (except for auth endpoints)
           final authEndpoints = ['/login', '/register'];
           final isAuthEndpoint = authEndpoints.any(
             (endpoint) => options.path.contains(endpoint),
@@ -75,30 +76,14 @@ class ApiService {
             options.headers['Authorization'] = 'Bearer $_cachedToken';
           }
 
-          print('\n🚀 REQUEST');
-          print('${options.method} ${options.baseUrl}${options.path}');
-          print('Headers: ${options.headers}');
-          if (options.data != null) {
-            print('Data: ${options.data}');
-          }
-
           handler.next(options);
         },
 
         onResponse: (response, handler) {
-          print('\n✅ RESPONSE');
-          print('Status: ${response.statusCode}');
-          print('Data: ${response.data}');
           handler.next(response);
         },
 
         onError: (error, handler) async {
-          print('\n❌ ERROR');
-          print('Status: ${error.response?.statusCode}');
-          print('Message: ${error.message}');
-          print('Data: ${error.response?.data}');
-
-          // Handle token expiration
           if (error.response?.statusCode == 401) {
             await clearToken();
             _cachedToken = null;
@@ -126,7 +111,6 @@ class ApiService {
         _deviceId = 'unknown-platform';
       }
     } catch (e) {
-      print('Error getting device ID: $e');
       _deviceId = 'fallback-device-id-${DateTime.now().millisecondsSinceEpoch}';
     }
   }
@@ -134,32 +118,84 @@ class ApiService {
   // Token Management
   Future<void> saveToken(String token) async {
     try {
-      await _storage.write(key: 'auth_token', value: token);
+      if (!_isValidTokenFormat(token)) {
+        throw Exception('Invalid token format');
+      }
+
+      final timestamp = DateTime.now().millisecondsSinceEpoch.toString();
+
+      await Future.wait([
+        _storage.write(key: _tokenKey, value: token),
+        _storage.write(key: _tokenTimestampKey, value: timestamp),
+      ]);
+
       _cachedToken = token;
     } catch (e) {
-      throw Exception('Failed to save authentication token');
+      throw Exception('Failed to save authentication token securely: $e');
     }
   }
 
   Future<String?> getToken() async {
     try {
-      if (_cachedToken != null) return _cachedToken;
-
-      final token = await _storage.read(key: 'auth_token');
-      if (token != null) {
-        _cachedToken = token;
+      if (_cachedToken != null && await _isTokenValid()) {
+        return _cachedToken;
       }
+
+      final token = await _storage.read(key: _tokenKey);
+      final timestampStr = await _storage.read(key: _tokenTimestampKey);
+
+      if (token == null || timestampStr == null) {
+        return null;
+      }
+
+      final timestamp = int.tryParse(timestampStr) ?? 0;
+      final now = DateTime.now().millisecondsSinceEpoch;
+      final hoursOld = (now - timestamp) / (1000 * 60 * 60);
+
+      if (hoursOld > _tokenExpiryHours) {
+        // clearing token expired
+        await clearToken();
+        return null;
+      }
+
+      _cachedToken = token;
       return token;
     } catch (e) {
+      print('Error retrieving token: $e');
       return null;
     }
   }
 
+  Future<bool> _isTokenValid() async {
+    try {
+      final timestampStr = await _storage.read(key: _tokenTimestampKey);
+      if (timestampStr == null) return false;
+
+      final timestamp = int.tryParse(timestampStr) ?? 0;
+      final now = DateTime.now().millisecondsSinceEpoch;
+      final hoursOld = (now - timestamp) / (1000 * 60 * 60);
+
+      return hoursOld <= _tokenExpiryHours;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  bool _isValidTokenFormat(String token) {
+    final parts = token.split('|');
+    return parts.length == 2 && parts[0].isNotEmpty && parts[1].length >= 40;
+  }
+
   Future<void> clearToken() async {
     try {
-      await _storage.delete(key: 'auth_token');
+      await Future.wait([
+        _storage.delete(key: _tokenKey),
+        _storage.delete(key: _tokenTimestampKey),
+      ]);
       _cachedToken = null;
-    } catch (e) {}
+    } catch (e) {
+      print('Error clearing token: $e');
+    }
   }
 
   Future<bool> hasValidToken() async {
@@ -167,16 +203,26 @@ class ApiService {
     return token != null && token.isNotEmpty;
   }
 
-  // Authentication API Methods
+  // Authentication Methods
   Future<ApiResponse<AuthResponse>> register({
     required String name,
     required String email,
     required String password,
   }) async {
     try {
-      print('\n REGISTERING USER');
-      print('Name: $name');
-      print('Email: $email');
+      if (name.trim().isEmpty || email.trim().isEmpty || password.isEmpty) {
+        return ApiResponse<AuthResponse>(
+          success: false,
+          message: 'All fields are required',
+        );
+      }
+
+      if (!_isValidEmail(email)) {
+        return ApiResponse<AuthResponse>(
+          success: false,
+          message: 'Please enter a valid email address',
+        );
+      }
 
       final requestData = {
         'name': name.trim(),
@@ -185,7 +231,6 @@ class ApiService {
       };
 
       final response = await _dio.post('/register', data: requestData);
-
       return _handleAuthResponse(response);
     } on DioException catch (e) {
       return _handleDioError<AuthResponse>(e);
@@ -202,8 +247,12 @@ class ApiService {
     required String password,
   }) async {
     try {
-      print('\n LOGGING IN USER');
-      print('Email: $email');
+      if (email.trim().isEmpty || password.isEmpty) {
+        return ApiResponse<AuthResponse>(
+          success: false,
+          message: 'Email and password are required',
+        );
+      }
 
       final requestData = {
         'email': email.trim().toLowerCase(),
@@ -211,7 +260,6 @@ class ApiService {
       };
 
       final response = await _dio.post('/login', data: requestData);
-
       return _handleAuthResponse(response);
     } on DioException catch (e) {
       return _handleDioError<AuthResponse>(e);
@@ -224,38 +272,47 @@ class ApiService {
   }
 
   ApiResponse<AuthResponse> _handleAuthResponse(Response response) {
-    if (response.data != null && response.data['success'] == true) {
-      final authResponse = AuthResponse.fromJson(response.data['data']);
+    try {
+      if (response.data != null && response.data['success'] == true) {
+        final authResponse = AuthResponse.fromJson(response.data['data']);
 
-      // Save token for future requests
-      saveToken(authResponse.token);
+        if (!_isValidTokenFormat(authResponse.token)) {
+          return ApiResponse<AuthResponse>(
+            success: false,
+            message: 'Received invalid token format from server',
+          );
+        }
 
-      print('✅ Authentication successful');
-      print('User: ${authResponse.user.name} (${authResponse.user.email})');
+        saveToken(authResponse.token);
 
-      return ApiResponse<AuthResponse>(
-        success: true,
-        message: response.data['message'] ?? 'Authentication successful',
-        data: authResponse,
-      );
-    } else {
+        return ApiResponse<AuthResponse>(
+          success: true,
+          message: response.data['message'] ?? 'Authentication successful',
+          data: authResponse,
+        );
+      } else {
+        return ApiResponse<AuthResponse>(
+          success: false,
+          message: response.data?['message'] ?? 'Authentication failed',
+        );
+      }
+    } catch (e) {
+      print('Error handling auth response: $e');
       return ApiResponse<AuthResponse>(
         success: false,
-        message: response.data?['message'] ?? 'Authentication failed',
+        message: 'Failed to process authentication response',
       );
     }
   }
 
   Future<ApiResponse<bool>> logout() async {
     try {
-      // user logout
       try {
         await _dio.post('/logout');
       } catch (e) {
-        print(' Server logout failed, continuing with local logout: $e');
+        print('Server logout failed');
       }
 
-      // Always clear local token
       await clearToken();
 
       return ApiResponse<bool>(
@@ -264,7 +321,6 @@ class ApiService {
         data: true,
       );
     } catch (e) {
-      // Even if there's an error, clear the token locally
       await clearToken();
 
       return ApiResponse<bool>(
@@ -275,7 +331,7 @@ class ApiService {
     }
   }
 
-  // Profile API Methods
+  // Profile Methods
   Future<ApiResponse<User>> getCurrentUser() async {
     try {
       final response = await _dio.get('/user');
@@ -297,7 +353,7 @@ class ApiService {
     } on DioException catch (e) {
       return _handleDioError<User>(e);
     } catch (e) {
-      print(' Unexpected error getting user: $e');
+      print('Unexpected error getting user: $e');
       return ApiResponse<User>(
         success: false,
         message: 'Failed to get user data: $e',
@@ -337,7 +393,7 @@ class ApiService {
       if (response.data != null && response.data['success'] == true) {
         final user = User.fromJson(response.data['data']['user']);
 
-        print(' Profile updated successfully');
+        // print('Profile updated successfully');
 
         return ApiResponse<User>(
           success: true,
@@ -360,135 +416,49 @@ class ApiService {
     }
   }
 
-  // Error Handling
-  ApiResponse<T> _handleDioError<T>(DioException error) {
-    String message = 'Network error occurred';
-    Map<String, List<String>>? errors;
-    if (error.response != null) {
-      final responseData = error.response!.data;
-
-      if (responseData is Map<String, dynamic>) {
-        message = responseData['message'] ?? message;
-
-        // Handle validation errors
-        if (responseData['errors'] != null) {
-          try {
-            errors = Map<String, List<String>>.from(
-              responseData['errors'].map(
-                (key, value) => MapEntry(
-                  key,
-                  List<String>.from(value is List ? value : [value.toString()]),
-                ),
-              ),
-            );
-          } catch (e) {
-            print('Error parsing validation errors: $e');
-          }
-        }
-      }
-
-      // Handle specific status codes
-      switch (error.response!.statusCode) {
-        case 400:
-          message = 'Bad request. Please check your input.';
-          break;
-        case 401:
-          message = 'Authentication failed. Please login again.';
-          break;
-        case 403:
-          message = 'Access denied. You do not have permission.';
-          break;
-        case 404:
-          message = 'Resource not found.';
-          break;
-        case 422:
-          message = errors != null && errors.isNotEmpty
-              ? 'Validation failed. Please check your input.'
-              : message;
-          break;
-        case 429:
-          message = 'Too many requests. Please try again later.';
-          break;
-        case 500:
-          message = 'Server error. Please try again later.';
-          break;
-        case 503:
-          message = 'Service unavailable. Please try again later.';
-          break;
-      }
-    } else {
-      // Handle network errors
-      switch (error.type) {
-        case DioExceptionType.connectionTimeout:
-          message =
-              'Connection timeout. Please check your internet connection.';
-          break;
-        case DioExceptionType.sendTimeout:
-          message = 'Request timeout. Please try again.';
-          break;
-        case DioExceptionType.receiveTimeout:
-          message = 'Response timeout. Please try again.';
-          break;
-        case DioExceptionType.connectionError:
-          message = 'No internet connection. Please check your network.';
-          break;
-        case DioExceptionType.cancel:
-          message = 'Request was cancelled.';
-          break;
-        default:
-          message = 'Network error: ${error.message}';
-      }
-    }
-
-    return ApiResponse<T>(success: false, message: message, errors: errors);
-  }
-
-  // Utility Methods
-  Future<void> clearAllData() async {
-    try {
-      await _storage.deleteAll();
-      _cachedToken = null;
-    } catch (e) {
-      print('❌ Error clearing all data: $e');
-    }
-  }
-
   Future<ApiResponse<User>> updateProfileImage(String imagePath) async {
     try {
-      print('\n📸 UPLOADING PROFILE IMAGE');
+      print('\nUPLOADING PROFILE IMAGE');
       print('Image path: $imagePath');
 
       final file = File(imagePath);
 
-      // Validate file exists
       if (!await file.exists()) {
         throw Exception('Image file not found');
       }
 
-      // Check file size (5MB limit)
       final fileSize = await file.length();
-      if (fileSize > 5 * 1024 * 1024) {
+      const maxSizeInBytes = 5 * 1024 * 1024; // 5MB
+      if (fileSize > maxSizeInBytes) {
         throw Exception('Image size must be less than 5MB');
       }
 
-      // Create multipart form data
+      final extension = imagePath.split('.').last.toLowerCase();
+      const allowedExtensions = ['jpg', 'jpeg', 'png', 'webp'];
+      if (!allowedExtensions.contains(extension)) {
+        throw Exception('Only JPG, PNG, and WebP images are allowed');
+      }
+
       final formData = FormData.fromMap({
         'image': await MultipartFile.fromFile(
           imagePath,
-          filename: 'profile_image.${imagePath.split('.').last}',
+          filename: 'profile_image.$extension',
         ),
       });
 
       final response = await _dio.post(
         '/profile/image',
         data: formData,
-        options: Options(headers: {'Content-Type': 'multipart/form-data'}),
+        options: Options(
+          headers: {'Content-Type': 'multipart/form-data'},
+          sendTimeout: const Duration(seconds: 60),
+        ),
       );
 
       if (response.data != null && response.data['success'] == true) {
         final user = User.fromJson(response.data['data']['user']);
 
-        print('✅ Profile image updated successfully');
+        print('Profile image updated successfully');
 
         return ApiResponse<User>(
           success: true,
@@ -506,23 +476,16 @@ class ApiService {
     } on DioException catch (e) {
       return _handleDioError<User>(e);
     } catch (e) {
-      return ApiResponse<User>(
-        success: false,
-        message: 'Profile image update failed: $e',
-      );
+      return ApiResponse<User>(success: false, message: e.toString());
     }
   }
 
   Future<ApiResponse<User>> removeProfileImage() async {
     try {
-      print('\n🗑️ REMOVING PROFILE IMAGE');
-
       final response = await _dio.delete('/profile/image');
 
       if (response.data != null && response.data['success'] == true) {
         final user = User.fromJson(response.data['data']['user']);
-
-        print('✅ Profile image removed successfully');
 
         return ApiResponse<User>(
           success: true,
@@ -544,6 +507,101 @@ class ApiService {
         success: false,
         message: 'Failed to remove profile image: $e',
       );
+    }
+  }
+
+  // Helper Methods
+  bool _isValidEmail(String email) {
+    return RegExp(
+      r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',
+    ).hasMatch(email);
+  }
+
+  ApiResponse<T> _handleDioError<T>(DioException error) {
+    String message = 'Network error occurred';
+    Map<String, List<String>>? errors;
+
+    if (error.response != null) {
+      final responseData = error.response!.data;
+
+      if (responseData is Map<String, dynamic>) {
+        message = responseData['message'] ?? message;
+
+        if (responseData['errors'] != null) {
+          try {
+            errors = Map<String, List<String>>.from(
+              responseData['errors'].map(
+                (key, value) => MapEntry(
+                  key,
+                  List<String>.from(value is List ? value : [value.toString()]),
+                ),
+              ),
+            );
+          } catch (e) {
+            print('Error parsing validation errors: $e');
+          }
+        }
+      }
+
+      switch (error.response!.statusCode) {
+        case 400:
+          message = 'Bad request. Please check your input.';
+          break;
+        case 401:
+          message = 'Please login again to continue';
+          break;
+        case 403:
+          message = 'Access denied. You do not have permission.';
+          break;
+        case 404:
+          message = 'Resource not found.';
+          break;
+        case 413:
+          message = 'File too large. Please choose a smaller image.';
+          break;
+        case 422:
+          message = errors != null && errors.isNotEmpty
+              ? 'Please check your input and try again'
+              : message;
+          break;
+        case 429:
+          message = 'Too many requests. Please wait and try again.';
+          break;
+        case 500:
+          message = 'Server error. Please try again later.';
+          break;
+        case 503:
+          message = 'Service unavailable. Please try again later.';
+          break;
+      }
+    } else {
+      switch (error.type) {
+        case DioExceptionType.connectionTimeout:
+        case DioExceptionType.sendTimeout:
+        case DioExceptionType.receiveTimeout:
+          message =
+              'Connection timeout. Please check your internet connection.';
+          break;
+        case DioExceptionType.connectionError:
+          message = 'No internet connection. Please check your network.';
+          break;
+        case DioExceptionType.cancel:
+          message = 'Request was cancelled.';
+          break;
+        default:
+          message = 'Network error. Please try again.';
+      }
+    }
+
+    return ApiResponse<T>(success: false, message: message, errors: errors);
+  }
+
+  Future<void> clearAllData() async {
+    try {
+      await _storage.deleteAll();
+      _cachedToken = null;
+    } catch (e) {
+      print('Error clearing all data: $e');
     }
   }
 

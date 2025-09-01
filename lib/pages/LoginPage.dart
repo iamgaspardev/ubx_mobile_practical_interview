@@ -226,17 +226,14 @@ class _LoginPageState extends State<LoginPage>
     final email = _emailController.text.trim();
     final password = _passwordController.text;
 
-    print('\n🔐 Attempting login for: $email');
-
     final success = await userProvider.login(email: email, password: password);
 
     if (success) {
       _showMessage('Welcome back! Login successful', MessageType.success);
 
-      // Save credentials if remember me is checked
+      // This is for Remembering
       if (_rememberMe) {
-        // TODO: Implement secure credential saving
-        print('💾 Remember me enabled - credentials should be saved securely');
+        //
       }
 
       // Mark user as logged in

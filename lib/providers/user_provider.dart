@@ -81,7 +81,8 @@ class UserProvider extends ChangeNotifier {
         email: email,
         password: password,
       );
-
+      print("Login credentials ------------>");
+      print(response.data);
       if (response.success && response.data != null) {
         _user = response.data!.user;
         _setAuthState(AuthState.authenticated);
@@ -241,7 +242,7 @@ class UserProvider extends ChangeNotifier {
 
     try {
       final response = await _apiService.updateProfileImage(imagePath);
-
+      print("response for profile update .....${response.data}");
       if (response.success && response.data != null) {
         _user = response.data;
         notifyListeners();

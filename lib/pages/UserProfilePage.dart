@@ -53,8 +53,6 @@ class ProfilePageContent extends StatelessWidget {
             'Manage Your Profile',
             style: TextStyle(fontSize: 16, color: Colors.grey[600]),
           ),
-          const SizedBox(height: 20),
-          _buildEditProfileButton(context),
         ],
       ),
     );
@@ -85,36 +83,59 @@ class ProfilePageContent extends StatelessWidget {
           child: userProvider.hasProfileImage
               ? ClipRRect(
                   borderRadius: BorderRadius.circular(60),
-                  child: Image.network(
-                    userProvider.getProfileImageUrl()!,
-                    fit: BoxFit.cover,
-                    width: 120,
-                    height: 120,
-                    errorBuilder: (context, error, stackTrace) {
-                      return const Icon(
-                        Icons.person,
-                        size: 60,
-                        color: Colors.white,
-                      );
-                    },
-                    loadingBuilder: (context, child, loadingProgress) {
-                      if (loadingProgress == null) return child;
-                      return Center(
-                        child: CircularProgressIndicator(
-                          value: loadingProgress.expectedTotalBytes != null
-                              ? loadingProgress.cumulativeBytesLoaded /
-                                    loadingProgress.expectedTotalBytes!
-                              : null,
-                          color: Colors.white,
-                        ),
-                      );
-                    },
-                  ),
+                  child: _buildProfileImage(userProvider),
                 )
               : const Icon(Icons.person, size: 60, color: Colors.white),
         ),
         _buildCameraButton(context, userProvider),
       ],
+    );
+  }
+
+  Widget _buildProfileImage(UserProvider userProvider) {
+    final imageUrl = userProvider.getProfileImageUrl();
+
+    if (imageUrl == null || imageUrl.isEmpty) {
+      return const Icon(Icons.person, size: 60, color: Colors.white);
+    }
+
+    return Image.network(
+      imageUrl,
+      fit: BoxFit.cover,
+      width: 120,
+      height: 120,
+      headers: {
+        'User-Agent': 'UBX-Mobile-App/1.0',
+        'Cache-Control': 'no-cache',
+      },
+      loadingBuilder: (context, child, loadingProgress) {
+        if (loadingProgress == null) {
+          return child;
+        }
+
+        // Show loading indicator
+        return Center(
+          child: CircularProgressIndicator(
+            value: loadingProgress.expectedTotalBytes != null
+                ? loadingProgress.cumulativeBytesLoaded /
+                      loadingProgress.expectedTotalBytes!
+                : null,
+            color: Colors.white,
+            strokeWidth: 2,
+          ),
+        );
+      },
+      errorBuilder: (context, error, stackTrace) {
+        return Container(
+          width: 120,
+          height: 120,
+          decoration: const BoxDecoration(
+            shape: BoxShape.circle,
+            color: Colors.red,
+          ),
+          child: const Icon(Icons.error, size: 40, color: Colors.white),
+        );
+      },
     );
   }
 
@@ -146,21 +167,6 @@ class ProfilePageContent extends StatelessWidget {
     );
   }
 
-  Widget _buildEditProfileButton(BuildContext context) {
-    return ElevatedButton(
-      onPressed: () => _showSnackBar(context, 'Edit Profile tapped!'),
-      style: ElevatedButton.styleFrom(
-        backgroundColor: Colors.green,
-        padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
-      ),
-      child: const Text(
-        'Edit Profile',
-        style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
-      ),
-    );
-  }
-
   Widget _buildProfileOptions(BuildContext context, UserProvider userProvider) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -170,14 +176,16 @@ class ProfilePageContent extends StatelessWidget {
             icon: Icons.person_outline,
             title: 'Personal Information',
             subtitle: userProvider.user?.email ?? 'No email',
-            onTap: () => _showSnackBar(context, 'Personal Information tapped!'),
+            onTap: () => _updateLastActiveTime(context),
+            color: Colors.green,
           ),
           const SizedBox(height: 12),
           ProfileOption(
             icon: Icons.notifications_active_outlined,
             title: 'Notifications',
             subtitle: 'Manage your notifications',
-            onTap: () => _showSnackBar(context, 'Notifications tapped!'),
+            onTap: () => _updateLastActiveTime(context),
+            color: Colors.green,
           ),
           const SizedBox(height: 30),
           _buildLogoutButton(context, userProvider),
@@ -336,7 +344,7 @@ class ProfilePageContent extends StatelessWidget {
           color: Colors.green[50],
           borderRadius: BorderRadius.circular(15),
           border: Border.all(
-            color: Colors.green.withValues(alpha: 0.2),
+            color: Colors.grey.withValues(alpha: 0.2),
             width: 1,
           ),
         ),
@@ -363,14 +371,14 @@ class ProfilePageContent extends StatelessWidget {
     ImageSource source,
     UserProvider userProvider,
   ) async {
-    Navigator.pop(context); // Close bottom sheet
+    Navigator.pop(context);
 
     try {
       print('🎬 Starting image selection from $source');
 
       final ImagePicker picker = ImagePicker();
 
-      // Add error handling specifically for platform exceptions
+      // error handling specifically for platform exceptions
       XFile? imageFile;
       try {
         imageFile = await picker.pickImage(
@@ -380,10 +388,6 @@ class ProfilePageContent extends StatelessWidget {
           imageQuality: 85,
         );
       } on PlatformException catch (platformError) {
-        print(
-          '❌ Platform exception: ${platformError.code} - ${platformError.message}',
-        );
-
         String errorMessage =
             'Unable to access ${source == ImageSource.camera ? 'camera' : 'gallery'}';
 
@@ -410,11 +414,8 @@ class ProfilePageContent extends StatelessWidget {
       }
 
       if (imageFile == null) {
-        print('📵 No image selected by user');
-        return; // User cancelled selection
+        return;
       }
-
-      print('✅ Image selected: ${imageFile.path}');
 
       // Validate file
       final File file = File(imageFile.path);
@@ -437,7 +438,6 @@ class ProfilePageContent extends StatelessWidget {
         return;
       }
 
-      // Show processing message
       _showSnackBar(context, 'Uploading profile picture...');
 
       // Upload to server
@@ -452,7 +452,6 @@ class ProfilePageContent extends StatelessWidget {
         );
       }
     } catch (e) {
-      print('❌ Unexpected error: $e');
       _showSnackBar(context, 'An error occurred while selecting the image');
     }
   }
@@ -495,6 +494,14 @@ class ProfilePageContent extends StatelessWidget {
         ),
       );
     }
+  }
+
+  void _updateLastActiveTime(BuildContext context) {
+    final appLockProvider = Provider.of<AppLockProvider>(
+      context,
+      listen: false,
+    );
+    appLockProvider.updateLastActiveTime();
   }
 
   void _showLogoutDialog(BuildContext context) {
@@ -542,6 +549,7 @@ class ProfilePageContent extends StatelessWidget {
 
     await userProvider.logout();
     appLockProvider.setUserLoggedOut();
+    appLockProvider.unlockApp();
 
     if (context.mounted) {
       Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
