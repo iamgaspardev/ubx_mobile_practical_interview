@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:ubx_practical_mobile/pages/Homepage.dart';
-import 'package:ubx_practical_mobile/pages/LandingPage.dart';
-import 'package:ubx_practical_mobile/pages/LoginPage.dart';
-import 'package:ubx_practical_mobile/pages/RegisterPage.dart';
-import 'package:ubx_practical_mobile/pages/BiometricAuthPage.dart';
+import 'package:ubx_practical_mobile/pages/home_page.dart';
+import 'package:ubx_practical_mobile/pages/landing_page.dart';
+import 'package:ubx_practical_mobile/pages/login_page.dart';
+import 'package:ubx_practical_mobile/pages/register_page.dart';
+import 'package:ubx_practical_mobile/pages/biometric_authpage.dart';
 import 'package:ubx_practical_mobile/pages/app_lock_screen.dart';
 import 'package:ubx_practical_mobile/widgets/app_lifecycle_wrapper.dart';
 import 'package:ubx_practical_mobile/providers/app_lock_provider.dart';
 import 'package:ubx_practical_mobile/providers/user_provider.dart';
-import 'package:ubx_practical_mobile/services/api_service.dart'; // Add this import
+import 'package:ubx_practical_mobile/services/api_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

@@ -29,9 +29,9 @@ class AppLockProvider with ChangeNotifier {
     _imageProcessingActive = active;
     notifyListeners();
     if (active) {
-      // print(' App lock disabled for image processing');
+      //  App lock disabled for image processing
     } else {
-      // print(' App lock re-enabled after image processing');
+      //  App lock re-enabled after image processing
       updateLastActiveTime();
     }
   }

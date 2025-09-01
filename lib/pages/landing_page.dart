@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:ubx_practical_mobile/pages/Homepage.dart';
-import 'package:ubx_practical_mobile/pages/UserProfilePage.dart';
+import 'package:ubx_practical_mobile/pages/home_page.dart';
+import 'package:ubx_practical_mobile/pages/user_profile_page.dart';
 import 'package:ubx_practical_mobile/providers/app_lock_provider.dart';
 import 'package:ubx_practical_mobile/services/app_lockout_service.dart';
 

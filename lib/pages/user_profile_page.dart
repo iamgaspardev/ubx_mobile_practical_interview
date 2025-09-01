@@ -6,6 +6,7 @@ import 'dart:io';
 import 'package:ubx_practical_mobile/widgets/DetailedCardOptions.dart';
 import 'package:ubx_practical_mobile/providers/user_provider.dart';
 import 'package:ubx_practical_mobile/providers/app_lock_provider.dart';
+import 'package:ubx_practical_mobile/widgets/edit_profile_form.dart';
 
 class ProfilePageContent extends StatelessWidget {
   const ProfilePageContent({super.key});
@@ -53,8 +54,51 @@ class ProfilePageContent extends StatelessWidget {
             'Manage Your Profile',
             style: TextStyle(fontSize: 16, color: Colors.grey[600]),
           ),
+          const SizedBox(height: 20),
+          _buildEditProfileButton(context, userProvider),
         ],
       ),
+    );
+  }
+
+  void _showEditProfileForm(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => const EditProfileFormWidget(),
+    );
+  }
+
+  Widget _buildEditProfileButton(
+    BuildContext context,
+    UserProvider userProvider,
+  ) {
+    return ElevatedButton(
+      onPressed: userProvider.isLoading
+          ? null
+          : () => _showEditProfileForm(context),
+      style: ElevatedButton.styleFrom(
+        backgroundColor: Colors.green,
+        padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
+      ),
+      child: userProvider.isLoading
+          ? const SizedBox(
+              width: 20,
+              height: 20,
+              child: CircularProgressIndicator(
+                color: Colors.white,
+                strokeWidth: 2,
+              ),
+            )
+          : const Text(
+              'Edit Profile',
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
     );
   }
 

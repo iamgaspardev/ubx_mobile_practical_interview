@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
 import 'package:local_auth/local_auth.dart';
-import 'package:ubx_practical_mobile/pages/RegisterPage.dart';
+import 'package:ubx_practical_mobile/pages/register_page.dart';
 import 'package:ubx_practical_mobile/services/app_lockout_service.dart';
 import 'package:ubx_practical_mobile/services/api_service.dart';
 import 'package:ubx_practical_mobile/widgets/InputWidget.dart';
