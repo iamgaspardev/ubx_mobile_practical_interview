@@ -1,3 +1,5 @@
+// ignore_for_file: use_super_parameters
+
 import 'package:flutter/material.dart';
 
 class DetailedCardOption extends StatelessWidget {
@@ -23,9 +25,7 @@ class DetailedCardOption extends StatelessWidget {
       child: Container(
         padding: EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color:
-              backgroundColor ??
-              Colors.white, // Use provided color or default to white
+          color: backgroundColor ?? Colors.white,
           borderRadius: BorderRadius.circular(15),
           boxShadow: [
             BoxShadow(

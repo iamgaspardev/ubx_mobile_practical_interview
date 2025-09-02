@@ -54,7 +54,7 @@ class _LandingpageState extends State<Landingpage> {
     return Scaffold(
       body: _pages[_selectedIndex],
       bottomNavigationBar: Container(
-        decoration: BoxDecoration(color: Colors.green[100]),
+        decoration: BoxDecoration(color: Colors.white),
         child: BottomNavigationBar(
           items: const <BottomNavigationBarItem>[
             BottomNavigationBarItem(
@@ -62,7 +62,6 @@ class _LandingpageState extends State<Landingpage> {
               activeIcon: Icon(Icons.home),
               label: 'Home',
             ),
-
             BottomNavigationBarItem(
               icon: Icon(Icons.person),
               activeIcon: Icon(Icons.person),
@@ -73,7 +72,7 @@ class _LandingpageState extends State<Landingpage> {
           selectedItemColor: Colors.green,
           unselectedItemColor: Colors.grey[400],
           backgroundColor: Colors.white,
-          elevation: 0,
+          elevation: 0.5,
           type: BottomNavigationBarType.fixed,
           selectedLabelStyle: const TextStyle(
             fontWeight: FontWeight.w600,

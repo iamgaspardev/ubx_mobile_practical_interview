@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:ubx_practical_mobile/providers/user_provider.dart';
 import 'package:ubx_practical_mobile/providers/app_lock_provider.dart';
-import 'package:ubx_practical_mobile/widgets/InputWidget.dart';
+import 'package:ubx_practical_mobile/widgets/Input_widget.dart';
 
 class EditProfileFormWidget extends StatefulWidget {
   const EditProfileFormWidget({super.key});

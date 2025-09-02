@@ -6,8 +6,8 @@ import 'package:local_auth/local_auth.dart';
 import 'package:ubx_practical_mobile/pages/register_page.dart';
 import 'package:ubx_practical_mobile/services/app_lockout_service.dart';
 import 'package:ubx_practical_mobile/services/api_service.dart';
-import 'package:ubx_practical_mobile/widgets/InputWidget.dart';
-import 'package:ubx_practical_mobile/widgets/OtherSigninButton.dart';
+import 'package:ubx_practical_mobile/widgets/Input_widget.dart';
+import 'package:ubx_practical_mobile/widgets/other_signin_button.dart';
 import 'package:ubx_practical_mobile/providers/app_lock_provider.dart';
 import 'package:ubx_practical_mobile/providers/user_provider.dart';
 

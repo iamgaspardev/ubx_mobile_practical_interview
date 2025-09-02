@@ -15,12 +15,10 @@ class AppLifecycleWrapper extends StatefulWidget {
 
 class _AppLifecycleWrapperState extends State<AppLifecycleWrapper>
     with WidgetsBindingObserver {
-
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    print("AppLifecycleWrapper initState - CALLED");
   }
 
   @override
@@ -32,10 +30,12 @@ class _AppLifecycleWrapperState extends State<AppLifecycleWrapper>
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     super.didChangeAppLifecycleState(state);
-    
-    final appLockProvider = Provider.of<AppLockProvider>(context, listen: false);
-    print("App lifecycle changed to: $state");
-    
+
+    final appLockProvider = Provider.of<AppLockProvider>(
+      context,
+      listen: false,
+    );
+
     switch (state) {
       case AppLifecycleState.paused:
       case AppLifecycleState.inactive:
@@ -53,30 +53,23 @@ class _AppLifecycleWrapperState extends State<AppLifecycleWrapper>
   Widget build(BuildContext context) {
     return Consumer<AppLockProvider>(
       builder: (context, appLockProvider, child) {
-        print("Building AppLifecycleWrapper with Provider");
-        print("App locked: ${appLockProvider.isLocked}, authenticated: ${appLockProvider.isAuthenticated}, user logged in: ${appLockProvider.isUserLoggedIn}, showing warning: ${appLockProvider.showingInactivityWarning}");
-        
         // Update context for provider
         appLockProvider.setCurrentContext(context);
-        
+
         // FIRST PRIORITY: Show lock screen if user is logged in AND app is locked
         if (appLockProvider.isUserLoggedIn && appLockProvider.isLocked) {
-          print("Should show lock screen");
           return const AppLockScreen();
         }
 
         // SECOND PRIORITY: Show inactivity warning as overlay if active
         if (appLockProvider.showingInactivityWarning) {
-          print("Should show inactivity warning overlay");
           return Scaffold(
             body: Stack(
               children: [
-                widget.child, 
+                widget.child,
                 Container(
                   color: Colors.black54,
-                  child: Center(
-                    child: InactivityWarningModal(),
-                  ),
+                  child: Center(child: InactivityWarningModal()),
                 ),
               ],
             ),
@@ -84,7 +77,6 @@ class _AppLifecycleWrapperState extends State<AppLifecycleWrapper>
         }
 
         // DEFAULT: Show main app content
-        print("Showing main app content");
         return widget.child;
       },
     );

@@ -1,9 +1,11 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter/services.dart';
 import 'dart:io';
-import 'package:ubx_practical_mobile/widgets/DetailedCardOptions.dart';
+import 'package:ubx_practical_mobile/widgets/detailed_card_options.dart';
 import 'package:ubx_practical_mobile/providers/user_provider.dart';
 import 'package:ubx_practical_mobile/providers/app_lock_provider.dart';
 import 'package:ubx_practical_mobile/widgets/edit_profile_form.dart';
@@ -385,7 +387,7 @@ class ProfilePageContent extends StatelessWidget {
         width: MediaQuery.of(context).size.width * 0.35,
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: Colors.green[50],
+          color: Colors.grey[50],
           borderRadius: BorderRadius.circular(15),
           border: Border.all(
             color: Colors.grey.withValues(alpha: 0.2),
@@ -394,14 +396,14 @@ class ProfilePageContent extends StatelessWidget {
         ),
         child: Column(
           children: [
-            Icon(icon, size: 40, color: Colors.green[600]),
+            Icon(icon, size: 40, color: Colors.grey[600]),
             const SizedBox(height: 10),
             Text(
               label,
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
-                color: Colors.green[600],
+                color: Colors.grey[600],
               ),
             ),
           ],

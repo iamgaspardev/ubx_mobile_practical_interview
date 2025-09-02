@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print
+
 import 'package:flutter/services.dart';
 import 'package:local_auth/local_auth.dart';
 
@@ -40,7 +42,8 @@ class AppLockoutService {
         return true; // Skip authentication if not supported
       }
 
-      final List<BiometricType> availableBiometrics = await _localAuth.getAvailableBiometrics();
+      final List<BiometricType> availableBiometrics = await _localAuth
+          .getAvailableBiometrics();
 
       if (availableBiometrics.isEmpty) {
         _isLocked = false;
