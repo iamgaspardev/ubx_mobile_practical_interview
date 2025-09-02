@@ -361,6 +361,7 @@ class ApiService {
     }
   }
 
+  // update profile of user
   Future<ApiResponse<User>> updateProfile({
     String? name,
     String? email,
@@ -388,12 +389,15 @@ class ApiService {
         }
       }
 
+      // Include device ID for tracking
+      if (_deviceId != null) {
+        data['device_id'] = _deviceId;
+      }
+
       final response = await _dio.put('/profile', data: data);
 
       if (response.data != null && response.data['success'] == true) {
         final user = User.fromJson(response.data['data']['user']);
-
-        // print('Profile updated successfully');
 
         return ApiResponse<User>(
           success: true,

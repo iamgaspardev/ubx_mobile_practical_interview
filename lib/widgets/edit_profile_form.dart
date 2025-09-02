@@ -109,6 +109,7 @@ class _EditProfileFormWidgetState extends State<EditProfileFormWidget> {
                             prefixIcon: Icons.email_outlined,
                             keyboardType: TextInputType.emailAddress,
                             textInputAction: TextInputAction.done,
+                            enabled: false,
                             validator: (value) {
                               if (value == null || value.trim().isEmpty) {
                                 return 'Email is required';
@@ -198,7 +199,7 @@ class _EditProfileFormWidgetState extends State<EditProfileFormWidget> {
 
     final success = await userProvider.updateProfile(
       name: _nameController.text.trim(),
-      email: _emailController.text.trim().toLowerCase(),
+      // Remove email from update since it's disabled
     );
 
     if (success) {
