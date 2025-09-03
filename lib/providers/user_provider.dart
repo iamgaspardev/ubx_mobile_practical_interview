@@ -81,8 +81,6 @@ class UserProvider extends ChangeNotifier {
         email: email,
         password: password,
       );
-      print("Login credentials ------------>");
-      print(response.data);
       if (response.success && response.data != null) {
         _user = response.data!.user;
         _setAuthState(AuthState.authenticated);

@@ -589,7 +589,7 @@ class ProfilePageContent extends StatelessWidget {
       context,
       listen: false,
     );
-    appLockProvider.setImageProcessingActive(true);
+    // appLockProvider.setImageProcessingActive(true);
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
