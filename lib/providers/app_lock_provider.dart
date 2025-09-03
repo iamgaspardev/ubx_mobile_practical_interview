@@ -202,7 +202,7 @@ class AppLockProvider with ChangeNotifier {
       );
 
       if (didAuthenticate) {
-        print("🔓 Authentication successful - unlocking app");
+        // print(" Authentication successful - unlocking app");
         unlockApp();
         return true;
       }

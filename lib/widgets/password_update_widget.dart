@@ -4,43 +4,32 @@ import 'package:ubx_practical_mobile/providers/user_provider.dart';
 import 'package:ubx_practical_mobile/providers/app_lock_provider.dart';
 import 'package:ubx_practical_mobile/widgets/Input_widget.dart';
 
-class EditProfileFormWidget extends StatefulWidget {
-  const EditProfileFormWidget({super.key});
+class ChangePasswordFormWidget extends StatefulWidget {
+  const ChangePasswordFormWidget({super.key});
 
   @override
-  State<EditProfileFormWidget> createState() => _EditProfileFormWidgetState();
+  State<ChangePasswordFormWidget> createState() =>
+      _ChangePasswordFormWidgetState();
 }
 
-class _EditProfileFormWidgetState extends State<EditProfileFormWidget> {
+class _ChangePasswordFormWidgetState extends State<ChangePasswordFormWidget> {
   final _formKey = GlobalKey<FormState>();
-  final _nameController = TextEditingController();
-  final _emailController = TextEditingController();
-
-  @override
-  void initState() {
-    super.initState();
-    _loadUserData();
-  }
-
-  void _loadUserData() {
-    final userProvider = Provider.of<UserProvider>(context, listen: false);
-    if (userProvider.user != null) {
-      _nameController.text = userProvider.user!.name;
-      _emailController.text = userProvider.user!.email;
-    }
-  }
+  final _currentPasswordController = TextEditingController();
+  final _newPasswordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
 
   @override
   void dispose() {
-    _nameController.dispose();
-    _emailController.dispose();
+    _currentPasswordController.dispose();
+    _newPasswordController.dispose();
+    _confirmPasswordController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: MediaQuery.of(context).size.height * 0.6,
+      height: MediaQuery.of(context).size.height * 0.7,
       decoration: const BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
@@ -65,7 +54,7 @@ class _EditProfileFormWidgetState extends State<EditProfileFormWidget> {
                   child: Row(
                     children: [
                       Text(
-                        'Edit Profile',
+                        'Change Password',
                         style: TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
@@ -82,57 +71,103 @@ class _EditProfileFormWidgetState extends State<EditProfileFormWidget> {
                 ),
 
                 Expanded(
-                  child: Padding(
+                  child: SingleChildScrollView(
                     padding: const EdgeInsets.symmetric(horizontal: 20),
                     child: Form(
                       key: _formKey,
                       child: Column(
                         children: [
                           InputWidget(
-                            controller: _nameController,
-                            hintText: 'Full Name',
-                            prefixIcon: Icons.person_outline,
+                            controller: _currentPasswordController,
+                            hintText: 'Current Password',
+                            prefixIcon: Icons.lock_outline,
+                            isPassword: true,
                             validator: (value) {
-                              if (value == null || value.trim().isEmpty) {
-                                return 'Name is required';
+                              if (value == null || value.isEmpty) {
+                                return 'Current password is required';
                               }
                               return null;
                             },
                           ),
 
                           InputWidget(
-                            controller: _emailController,
-                            hintText: 'Email Address',
-                            prefixIcon: Icons.email_outlined,
-                            keyboardType: TextInputType.emailAddress,
-                            textInputAction: TextInputAction.done,
-                            enabled: false,
+                            controller: _newPasswordController,
+                            hintText: 'New Password',
+                            prefixIcon: Icons.lock,
+                            isPassword: true,
                             validator: (value) {
-                              if (value == null || value.trim().isEmpty) {
-                                return 'Email is required';
+                              if (value == null || value.isEmpty) {
+                                return 'New password is required';
                               }
-                              if (!RegExp(
-                                r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',
-                              ).hasMatch(value)) {
-                                return 'Please enter a valid email address';
+                              if (value.length < 8) {
+                                return 'Password must be at least 8 characters';
                               }
                               return null;
                             },
                           ),
+
+                          InputWidget(
+                            controller: _confirmPasswordController,
+                            hintText: 'Confirm New Password',
+                            prefixIcon: Icons.lock_reset,
+                            isPassword: true,
+                            textInputAction: TextInputAction.done,
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Please confirm your new password';
+                              }
+                              if (value != _newPasswordController.text) {
+                                return 'Passwords do not match';
+                              }
+                              return null;
+                            },
+                          ),
+
+                          const SizedBox(height: 10),
+                          Container(
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: Colors.green[50],
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(color: Colors.green[200]!),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Password Requirements:',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.green[800],
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                _buildRequirement('At least 8 characters'),
+                                _buildRequirement(
+                                  'Mix of letters and numbers recommended',
+                                ),
+                                _buildRequirement('Avoid common passwords'),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 80), // Extra space for button
                         ],
                       ),
                     ),
                   ),
                 ),
 
-                // Save Button
+                // Change Password Button
                 Container(
                   padding: const EdgeInsets.all(20),
                   child: SizedBox(
                     width: double.infinity,
                     height: 56,
                     child: ElevatedButton(
-                      onPressed: userProvider.isLoading ? null : _saveProfile,
+                      onPressed: userProvider.isLoading
+                          ? null
+                          : _changePassword,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.green,
                         shape: RoundedRectangleBorder(
@@ -153,7 +188,7 @@ class _EditProfileFormWidgetState extends State<EditProfileFormWidget> {
                                 ),
                                 SizedBox(width: 12),
                                 Text(
-                                  'Updating...',
+                                  'Changing Password...',
                                   style: TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.w600,
@@ -163,7 +198,7 @@ class _EditProfileFormWidgetState extends State<EditProfileFormWidget> {
                               ],
                             )
                           : const Text(
-                              'Save Changes',
+                              'Change Password',
                               style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w600,
@@ -181,7 +216,20 @@ class _EditProfileFormWidgetState extends State<EditProfileFormWidget> {
     );
   }
 
-  Future<void> _saveProfile() async {
+  Widget _buildRequirement(String text) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 2),
+      child: Row(
+        children: [
+          Icon(Icons.check_circle_outline, size: 16, color: Colors.green[600]),
+          const SizedBox(width: 8),
+          Text(text, style: TextStyle(fontSize: 12, color: Colors.green[700])),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _changePassword() async {
     if (!_formKey.currentState!.validate()) {
       return;
     }
@@ -195,16 +243,22 @@ class _EditProfileFormWidgetState extends State<EditProfileFormWidget> {
     appLockProvider.updateLastActiveTime();
 
     final success = await userProvider.updateProfile(
-      name: _nameController.text.trim(),
-      // Remove email from update since it's disabled
+      currentPassword: _currentPasswordController.text,
+      password: _newPasswordController.text,
+      passwordConfirmation: _confirmPasswordController.text,
     );
 
     if (success) {
-      _showSnackBar('Profile updated successfully!', Colors.green);
+      _showSnackBar('Password changed successfully!', Colors.green);
       Navigator.pop(context);
+
+      // Clear form
+      _currentPasswordController.clear();
+      _newPasswordController.clear();
+      _confirmPasswordController.clear();
     } else {
       _showSnackBar(
-        userProvider.errorMessage ?? 'Failed to update profile',
+        userProvider.errorMessage ?? 'Failed to change password',
         Colors.red,
       );
     }

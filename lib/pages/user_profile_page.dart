@@ -9,6 +9,7 @@ import 'package:ubx_practical_mobile/widgets/detailed_card_options.dart';
 import 'package:ubx_practical_mobile/providers/user_provider.dart';
 import 'package:ubx_practical_mobile/providers/app_lock_provider.dart';
 import 'package:ubx_practical_mobile/widgets/edit_profile_form.dart';
+import 'package:ubx_practical_mobile/widgets/password_update_widget.dart';
 
 class ProfilePageContent extends StatelessWidget {
   const ProfilePageContent({super.key});
@@ -227,10 +228,10 @@ class ProfilePageContent extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           DetailedCardOption(
-            icon: Icons.notifications_active_outlined,
-            title: 'Notifications',
-            subtitle: 'Manage your notifications',
-            onTap: () => _updateLastActiveTime(context),
+            icon: Icons.lock_outline,
+            title: 'Change Password',
+            subtitle: 'Update your account password',
+            onTap: () => _showChangePasswordForm(context),
             backgroundColor: Colors.white,
           ),
           const SizedBox(height: 30),
@@ -581,6 +582,20 @@ class ProfilePageContent extends StatelessWidget {
       listen: false,
     );
     appLockProvider.updateLastActiveTime();
+  }
+
+  void _showChangePasswordForm(BuildContext context) {
+    final appLockProvider = Provider.of<AppLockProvider>(
+      context,
+      listen: false,
+    );
+    appLockProvider.setImageProcessingActive(true);
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => const ChangePasswordFormWidget(),
+    );
   }
 
   void _showLogoutDialog(BuildContext context) {

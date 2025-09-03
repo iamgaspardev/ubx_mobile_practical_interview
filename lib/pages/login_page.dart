@@ -397,7 +397,7 @@ class _LoginPageState extends State<LoginPage>
 
                         // Welcome Text
                         Text(
-                          'Welcome Back',
+                          'UBX Interview',
                           style: TextStyle(
                             fontSize: 36,
                             fontWeight: FontWeight.bold,

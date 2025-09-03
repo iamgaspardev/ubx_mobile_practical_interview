@@ -361,7 +361,7 @@ class ApiService {
     }
   }
 
-  // update profile of user
+  // update profile of
   Future<ApiResponse<User>> updateProfile({
     String? name,
     String? email,
